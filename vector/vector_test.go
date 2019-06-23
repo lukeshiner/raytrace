@@ -15,17 +15,17 @@ func TestEqual(t *testing.T) {
 
 func TestPoint(t *testing.T) {
 	point := MakePoint(4.3, -4.2, 3.1)
-	if point.x != 4.3 {
-		t.Error("Failed to retrieve the Point.x")
+	if point.X != 4.3 {
+		t.Error("Failed to retrieve the Point.X")
 	}
-	if point.y != -4.2 {
-		t.Error("Failed to retrieve the Point.y")
+	if point.Y != -4.2 {
+		t.Error("Failed to retrieve the Point.Y")
 	}
-	if point.z != 3.1 {
-		t.Error("Failed to retrieve the Point.z")
+	if point.Z != 3.1 {
+		t.Error("Failed to retrieve the Point.Z")
 	}
-	if point.w != 1.0 {
-		t.Error("Failed to retrieve the Point.w")
+	if point.W != 1.0 {
+		t.Error("Failed to retrieve the Point.W")
 	}
 	if point.IsPoint() != true {
 		t.Error("Point.IsPoint did not return true")
@@ -37,17 +37,17 @@ func TestPoint(t *testing.T) {
 
 func TestVector(t *testing.T) {
 	vector := MakeVector(4.3, -4.2, 3.1)
-	if vector.x != 4.3 {
-		t.Error("Failed to retrieve the Vector.x")
+	if vector.X != 4.3 {
+		t.Error("Failed to retrieve the Vector.X")
 	}
-	if vector.y != -4.2 {
-		t.Error("Failed to retrieve the Vector.y")
+	if vector.Y != -4.2 {
+		t.Error("Failed to retrieve the Vector.Y")
 	}
-	if vector.z != 3.1 {
-		t.Error("Failed to retrieve the Vector.z")
+	if vector.Z != 3.1 {
+		t.Error("Failed to retrieve the Vector.Z")
 	}
-	if vector.w != 0.0 {
-		t.Error("Failed to retrieve the Vector.w")
+	if vector.W != 0.0 {
+		t.Error("Failed to retrieve the Vector.W")
 	}
 	if vector.IsPoint() != false {
 		t.Error("Vector.IsPoint did not return false")

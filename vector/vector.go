@@ -12,18 +12,18 @@ func Equal(a float64, b float64) bool {
 }
 
 type Vector struct {
-	x float64
-	y float64
-	z float64
-	w float64
+	X float64
+	Y float64
+	Z float64
+	W float64
 }
 
 func (v *Vector) IsPoint() bool {
-	return v.w == 1.0
+	return v.W == 1.0
 }
 
 func (v *Vector) IsVector() bool {
-	return v.w == 0.0
+	return v.W == 0.0
 }
 
 func (v *Vector) Equal(other *Vector) bool {
@@ -31,59 +31,59 @@ func (v *Vector) Equal(other *Vector) bool {
 }
 
 func (v *Vector) Add(other *Vector) Vector {
-	return Vector{v.x + other.x, v.y + other.y, v.z + other.z, v.w + other.w}
+	return Vector{v.X + other.X, v.Y + other.Y, v.Z + other.Z, v.W + other.W}
 }
 
 func (v *Vector) Sub(other *Vector) Vector {
-	return Vector{v.x - other.x, v.y - other.y, v.z - other.z, v.w - other.w}
+	return Vector{v.X - other.X, v.Y - other.Y, v.Z - other.Z, v.W - other.W}
 }
 
 func (v *Vector) Negate() Vector {
-	return Vector{-v.x, -v.y, -v.z, -v.w}
+	return Vector{-v.X, -v.Y, -v.Z, -v.W}
 }
 
 func (v *Vector) ScalarMult(scalar float64) Vector {
-	return Vector{v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar}
+	return Vector{v.X * scalar, v.Y * scalar, v.Z * scalar, v.W * scalar}
 }
 
 func (v *Vector) ScalarDiv(scalar float64) Vector {
-	return Vector{v.x / scalar, v.y / scalar, v.z / scalar, v.w / scalar}
+	return Vector{v.X / scalar, v.Y / scalar, v.Z / scalar, v.W / scalar}
 }
 
 func (v *Vector) Mag() float64 {
-	return math.Sqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w)
+	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z + v.W*v.W)
 }
 
 func (v *Vector) Normalize() Vector {
 	mag := v.Mag()
-	return Vector{v.x / mag, v.y / mag, v.z / mag, v.w / mag}
+	return Vector{v.X / mag, v.Y / mag, v.Z / mag, v.W / mag}
 }
 
 func EqualVectors(vectorA *Vector, vectorB *Vector) bool {
-	if Equal(vectorA.x, vectorB.x) == false {
+	if Equal(vectorA.X, vectorB.X) == false {
 		return false
 	}
-	if Equal(vectorA.y, vectorB.y) == false {
+	if Equal(vectorA.Y, vectorB.Y) == false {
 		return false
 	}
-	if Equal(vectorA.z, vectorB.z) == false {
+	if Equal(vectorA.Z, vectorB.Z) == false {
 		return false
 	}
-	if Equal(vectorA.w, vectorB.w) == false {
+	if Equal(vectorA.W, vectorB.W) == false {
 		return false
 	}
 	return true
 }
 
 func DotProduct(a *Vector, b *Vector) float64 {
-	return (a.x * b.x) + (a.y * b.y) + (a.z * b.z) + (a.w * b.w)
+	return (a.X * b.X) + (a.Y * b.Y) + (a.Z * b.Z) + (a.W * b.W)
 }
 
 func CrossProduct(a *Vector, b *Vector) Vector {
 	return Vector{
-		a.y*b.z - a.z*b.y,
-		a.z*b.x - a.x*b.z,
-		a.x*b.y - a.y*b.x,
+		a.Y*b.Z - a.Z*b.Y,
+		a.Z*b.X - a.X*b.Z,
+		a.X*b.Y - a.Y*b.X,
 		0,
 	}
 }

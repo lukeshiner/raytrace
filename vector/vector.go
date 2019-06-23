@@ -1,15 +1,10 @@
 package vector
 
-import "math"
+import (
+	"math"
 
-// EPSLION is the margin of error used to compare floats for equality.
-const EPSLION = 0.00001
-
-// Equal compares two float64 for equality. It returns true if they are within
-// EPSILON of eachother.
-func Equal(a float64, b float64) bool {
-	return math.Abs(a-b) < EPSLION
-}
+	"github.com/lukeshiner/raytrace/comparison"
+)
 
 // Vector is the struct used for points and vectors.
 type Vector struct {
@@ -76,16 +71,16 @@ func (v *Vector) Normalize() Vector {
 // EqualVectors returns true if all attributes of Vectors a and b are within
 // EPSILON of eachother.
 func EqualVectors(a *Vector, b *Vector) bool {
-	if Equal(a.X, b.X) == false {
+	if comparison.EpsilonEqual(a.X, b.X) == false {
 		return false
 	}
-	if Equal(a.Y, b.Y) == false {
+	if comparison.EpsilonEqual(a.Y, b.Y) == false {
 		return false
 	}
-	if Equal(a.Z, b.Z) == false {
+	if comparison.EpsilonEqual(a.Z, b.Z) == false {
 		return false
 	}
-	if Equal(a.W, b.W) == false {
+	if comparison.EpsilonEqual(a.W, b.W) == false {
 		return false
 	}
 	return true

@@ -3,15 +3,9 @@ package vector
 import (
 	"math"
 	"testing"
-)
 
-func TestEqual(t *testing.T) {
-	var a float64 = 0.1
-	var b float64 = 0.1
-	if Equal(a, b) != true {
-		t.Error("Equality check failed.")
-	}
-}
+	"github.com/lukeshiner/raytrace/comparison"
+)
 
 func TestPoint(t *testing.T) {
 	point := MakePoint(4.3, -4.2, 3.1)
@@ -287,7 +281,7 @@ func TestVectorMagMethod(t *testing.T) {
 
 	for _, test := range tests {
 		output := test.vector.Mag()
-		if Equal(output, test.expected) != true {
+		if comparison.EpsilonEqual(output, test.expected) != true {
 			t.Errorf(
 				"Failed calculating magnitude of vector %+v: expected %+v, recieved %+v",
 				test.vector,
@@ -343,7 +337,7 @@ func TestVectorDotProduct(t *testing.T) {
 
 	for _, test := range tests {
 		output := DotProduct(&test.a, &test.b)
-		if Equal(output, test.expected) != true {
+		if comparison.EpsilonEqual(output, test.expected) != true {
 			t.Errorf(
 				"Failed calculating dot product of vectors %+v and %+v: expected %+v, recieved %+v",
 				test.a,
@@ -371,12 +365,12 @@ func TestVectorCrossProduct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		error_message := "Failed calculating cross product of vectors %+v and %+v: expected %+v, recieved %+v"
+		errorMessage := "Failed calculating cross product of vectors %+v and %+v: expected %+v, recieved %+v"
 		outputAB := CrossProduct(&test.a, &test.b)
 		outputBA := CrossProduct(&test.b, &test.a)
 		if EqualVectors(&outputAB, &test.expectedAB) != true {
 			t.Errorf(
-				error_message,
+				errorMessage,
 				test.a,
 				test.b,
 				test.expectedAB,
@@ -385,7 +379,7 @@ func TestVectorCrossProduct(t *testing.T) {
 		}
 		if EqualVectors(&outputBA, &test.expectedBA) != true {
 			t.Errorf(
-				error_message,
+				errorMessage,
 				test.b,
 				test.a,
 				test.expectedBA,

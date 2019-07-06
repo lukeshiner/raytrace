@@ -21,8 +21,22 @@ func (m *Matrix) Get(x, y int) float64 {
 	return m.Cells[x][y]
 }
 
-// EqualMatricies compares two instances of Matrix for equality.
-func EqualMatricies(a, b Matrix) bool {
+// Row returns the values in row[index] of the matrix.
+func (m *Matrix) Row(index int) []float64 {
+	return m.Cells[index]
+}
+
+// Column returns the values in column[index] of the matrix.
+func (m *Matrix) Column(index int) []float64 {
+	var column []float64
+	for y := 0; y < m.Height; y++ {
+		column = append(column, m.Cells[y][index])
+	}
+	return column
+}
+
+// Equal compares two instances of Matrix for equality.
+func Equal(a, b Matrix) bool {
 	if a.Width != b.Width || a.Height != b.Height {
 		return false
 	}
@@ -34,4 +48,30 @@ func EqualMatricies(a, b Matrix) bool {
 		}
 	}
 	return true
+}
+
+func multiplyCell(a, b Matrix, x, y int) float64 {
+	var value float64
+	row := a.Row(x)
+	column := b.Column(y)
+	for i := 0; i < a.Width; i++ {
+		value += row[i] * column[i]
+	}
+	return value
+}
+
+// Multiply returns the product of two matricies.
+func Multiply(a, b Matrix) Matrix {
+	var values [][]float64
+	var row []float64
+	for x := 0; x < a.Height; x++ {
+		for y := 0; y < a.Width; y++ {
+			row = append(row, multiplyCell(a, b, x, y))
+		}
+		values = append(values, make([]float64, len(row)))
+		copy(values[x], row)
+		row = row[:0]
+	}
+	m := Matrix{Width: a.Width, Height: a.Height, Cells: values}
+	return m
 }

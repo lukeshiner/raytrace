@@ -115,3 +115,8 @@ func MakePoint(x float64, y float64, z float64) Vector {
 func MakeVector(x float64, y float64, z float64) Vector {
 	return Vector{x, y, z, 0.0}
 }
+
+// FromSlice returns a vector from a four element slice
+func FromSlice(t []float64) Vector {
+	return Vector{X: t[0], Y: t[1], Z: t[2], W: t[3]}
+}

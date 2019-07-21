@@ -421,3 +421,16 @@ func TestTuple(t *testing.T) {
 		}
 	}
 }
+
+func TestFromSlice(t *testing.T) {
+	var x, y, z, w float64
+	x = 5
+	y = -7
+	z = 2
+	w = 1
+	s := []float64{x, y, z, w}
+	v := FromSlice(s)
+	if v.X != x || v.Y != y || v.Z != z || v.W != w {
+		t.Errorf("FromSlice(%+v) produced %+v.", s, v)
+	}
+}

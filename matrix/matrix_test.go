@@ -1058,3 +1058,53 @@ func TestRotationZofPoint(t *testing.T) {
 		}
 	}
 }
+
+// Shearing
+
+func TestShearing(t *testing.T) {
+	var tests = []struct {
+		transform       Matrix
+		point, expected vector.Vector
+	}{
+		{
+			transform: Shearing(1, 0, 0, 0, 0, 0),
+			point:     vector.MakePoint(2, 3, 4),
+			expected:  vector.MakePoint(5, 3, 4),
+		},
+		{
+			transform: Shearing(0, 1, 0, 0, 0, 0),
+			point:     vector.MakePoint(2, 3, 4),
+			expected:  vector.MakePoint(6, 3, 4),
+		},
+		{
+			transform: Shearing(0, 0, 1, 0, 0, 0),
+			point:     vector.MakePoint(2, 3, 4),
+			expected:  vector.MakePoint(2, 5, 4),
+		},
+		{
+			transform: Shearing(0, 0, 0, 1, 0, 0),
+			point:     vector.MakePoint(2, 3, 4),
+			expected:  vector.MakePoint(2, 7, 4),
+		},
+		{
+			transform: Shearing(0, 0, 0, 0, 1, 0),
+			point:     vector.MakePoint(2, 3, 4),
+			expected:  vector.MakePoint(2, 3, 6),
+		},
+		{
+			transform: Shearing(0, 0, 0, 0, 0, 1),
+			point:     vector.MakePoint(2, 3, 4),
+			expected:  vector.MakePoint(2, 3, 7),
+		},
+	}
+	for _, test := range tests {
+		value := MultiplyTuple(test.transform, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Shearing of point %+v by %+v was %+v, expected %+v",
+				test.point, test.transform, valuePoint, test.expected,
+			)
+		}
+	}
+}

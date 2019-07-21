@@ -248,3 +248,15 @@ func RotationZ(radians float64) Matrix {
 	m.Cells[1][1] = math.Cos(radians)
 	return m
 }
+
+// Shearing returns a shearing transformation matrix
+func Shearing(Xy, Xz, Yx, Yz, Zx, Zy float64) Matrix {
+	m := IdentityMatrix(4)
+	m.Cells[0][1] = Xy
+	m.Cells[0][2] = Xz
+	m.Cells[1][0] = Yx
+	m.Cells[1][2] = Yz
+	m.Cells[2][0] = Zx
+	m.Cells[2][1] = Zy
+	return m
+}

@@ -199,3 +199,12 @@ func IdentityMatrix(size int) Matrix {
 	}
 	return New(values...)
 }
+
+// Translation returns a traslation matrix.
+func Translation(x, y, z float64) Matrix {
+	m := IdentityMatrix(4)
+	m.Cells[0][3] = x
+	m.Cells[1][3] = y
+	m.Cells[2][3] = z
+	return m
+}

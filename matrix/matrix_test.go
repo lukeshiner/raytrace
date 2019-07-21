@@ -2,6 +2,8 @@ package matrix
 
 import (
 	"testing"
+
+	"github.com/lukeshiner/raytrace/vector"
 )
 
 func TestMatrix(t *testing.T) {
@@ -737,6 +739,101 @@ func TestMultiplyByInverse(t *testing.T) {
 		value := Multiply(c, inverse)
 		if Equal(test.a, value) != true {
 			t.Errorf("Failed get back original matrix by multiplying with the inverse.")
+		}
+	}
+}
+
+func TestTranslation(t *testing.T) {
+	var tests = []struct {
+		x, y, z  float64
+		expected Matrix
+	}{
+		{
+			x: 3, y: -4, z: -7,
+			expected: New(
+				[]float64{1, 0, 0, 3},
+				[]float64{0, 1, 0, -4},
+				[]float64{0, 0, 1, -7},
+				[]float64{0, 0, 0, 1},
+			),
+		},
+	}
+	for _, test := range tests {
+		value := Translation(test.x, test.y, test.z)
+		if Equal(value, test.expected) != true {
+			t.Errorf(
+				"Translation(%+v, %+v, %+v) produced %+v, expected %+v.",
+				test.x, test.y, test.z, value, test.expected,
+			)
+		}
+	}
+}
+
+func TestTranslationOfPoint(t *testing.T) {
+	var tests = []struct {
+		transform       Matrix
+		point, expected vector.Vector
+	}{
+		{
+			transform: Translation(5, -3, 2),
+			point:     vector.MakePoint(-3, 4, 5),
+			expected:  vector.MakePoint(2, 1, 7),
+		},
+	}
+	for _, test := range tests {
+		value := MultiplyTuple(test.transform, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Translation of point %+v by translation %+v was %+v, expected %+v",
+				test.point, test.transform, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+func TestInverseTranslation(t *testing.T) {
+	var tests = []struct {
+		transform       Matrix
+		point, expected vector.Vector
+	}{
+		{
+			transform: Translation(5, -3, 2),
+			point:     vector.MakePoint(-3, 4, 5),
+			expected:  vector.MakePoint(-8, 7, 3),
+		},
+	}
+	for _, test := range tests {
+		inverse, _ := test.transform.Invert()
+		value := MultiplyTuple(inverse, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Translation of point %+v by the inverse of translation %+v was %+v, expected %+v",
+				test.point, test.transform, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+func TestTranslationOfVector(t *testing.T) {
+	var tests = []struct {
+		transform Matrix
+		point     vector.Vector
+	}{
+		{
+			transform: Translation(5, -3, 2),
+			point:     vector.MakeVector(-3, 4, 5),
+		},
+	}
+	for _, test := range tests {
+		value := MultiplyTuple(test.transform, test.point.Tuple())
+		valuePoint := vector.MakeVector(value[0], value[1], value[2])
+		if test.point.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Translation of point %+v by the inverse of translation %+v was %+v, expected %+v",
+				test.point, test.transform, valuePoint, test.point,
+			)
 		}
 	}
 }

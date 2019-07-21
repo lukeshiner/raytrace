@@ -601,6 +601,8 @@ func TestDeterminant(t *testing.T) {
 	}
 }
 
+// Inverse
+
 func TestInvertable(t *testing.T) {
 	var tests = []struct {
 		matrix      Matrix
@@ -743,6 +745,8 @@ func TestMultiplyByInverse(t *testing.T) {
 	}
 }
 
+// Translation
+
 func TestTranslation(t *testing.T) {
 	var tests = []struct {
 		x, y, z  float64
@@ -831,8 +835,111 @@ func TestTranslationOfVector(t *testing.T) {
 		valuePoint := vector.MakeVector(value[0], value[1], value[2])
 		if test.point.Equal(&valuePoint) != true {
 			t.Errorf(
-				"Translation of point %+v by the inverse of translation %+v was %+v, expected %+v",
+				"Translation of vector %+v by the inverse of translation %+v was %+v, expected %+v",
 				test.point, test.transform, valuePoint, test.point,
+			)
+		}
+	}
+}
+
+// Scaling
+
+func TestScaling(t *testing.T) {
+	var tests = []struct {
+		x, y, z  float64
+		expected Matrix
+	}{
+		{
+			x: 3, y: -4, z: -7,
+			expected: New(
+				[]float64{3, 0, 0, 0},
+				[]float64{0, -4, 0, 0},
+				[]float64{0, 0, -7, 0},
+				[]float64{0, 0, 0, 1},
+			),
+		},
+	}
+	for _, test := range tests {
+		value := Scaling(test.x, test.y, test.z)
+		if Equal(value, test.expected) != true {
+			t.Errorf(
+				"Scaling(%+v, %+v, %+v) produced %+v, expected %+v.",
+				test.x, test.y, test.z, value, test.expected,
+			)
+		}
+	}
+}
+
+func TestScalingOfPoint(t *testing.T) {
+	var tests = []struct {
+		transform       Matrix
+		point, expected vector.Vector
+	}{
+		{
+			transform: Scaling(2, 3, 4),
+			point:     vector.MakePoint(-4, 6, 8),
+			expected:  vector.MakePoint(-8, 18, 32),
+		},
+		{
+			transform: Scaling(-1, 1, 1),
+			point:     vector.MakePoint(2, 3, 4),
+			expected:  vector.MakePoint(-2, 3, 4),
+		},
+	}
+	for _, test := range tests {
+		value := MultiplyTuple(test.transform, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Scaling of point %+v by scaling %+v was %+v, expected %+v",
+				test.point, test.transform, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+func TestScalingOfVector(t *testing.T) {
+	var tests = []struct {
+		transform       Matrix
+		point, expected vector.Vector
+	}{
+		{
+			transform: Scaling(2, 3, 4),
+			point:     vector.MakeVector(-4, 6, 8),
+			expected:  vector.MakeVector(-8, 18, 32),
+		},
+	}
+	for _, test := range tests {
+		value := MultiplyTuple(test.transform, test.point.Tuple())
+		valuePoint := vector.MakeVector(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Scaling of vector %+v by scaling %+v was %+v, expected %+v",
+				test.point, test.transform, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+func TestInverseScalingOfPoint(t *testing.T) {
+	var tests = []struct {
+		transform       Matrix
+		point, expected vector.Vector
+	}{
+		{
+			transform: Scaling(2, 3, 4),
+			point:     vector.MakePoint(-4, 6, 8),
+			expected:  vector.MakePoint(-2, 2, 2),
+		},
+	}
+	for _, test := range tests {
+		inverse, _ := test.transform.Invert()
+		value := MultiplyTuple(inverse, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Scaling of point %+v by inverse of scaling %+v was %+v, expected %+v",
+				test.point, test.transform, valuePoint, test.expected,
 			)
 		}
 	}

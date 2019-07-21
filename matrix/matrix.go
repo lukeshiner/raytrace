@@ -200,11 +200,20 @@ func IdentityMatrix(size int) Matrix {
 	return New(values...)
 }
 
-// Translation returns a traslation matrix.
+// Translation returns a traslation transform matrix.
 func Translation(x, y, z float64) Matrix {
 	m := IdentityMatrix(4)
 	m.Cells[0][3] = x
 	m.Cells[1][3] = y
 	m.Cells[2][3] = z
+	return m
+}
+
+// Scaling returns a scaling transform matrix.
+func Scaling(x, y, z float64) Matrix {
+	m := IdentityMatrix(4)
+	m.Cells[0][0] = x
+	m.Cells[1][1] = y
+	m.Cells[2][2] = z
 	return m
 }

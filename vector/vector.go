@@ -68,6 +68,11 @@ func (v *Vector) Normalize() Vector {
 	return Vector{v.X / mag, v.Y / mag, v.Z / mag, v.W / mag}
 }
 
+// Tuple returns the values of the vector as a []float64.
+func (v *Vector) Tuple() []float64 {
+	return []float64{v.X, v.Y, v.Z, v.W}
+}
+
 // EqualVectors returns true if all attributes of Vectors a and b are within
 // EPSILON of eachother.
 func EqualVectors(a *Vector, b *Vector) bool {

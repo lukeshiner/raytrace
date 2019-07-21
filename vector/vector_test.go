@@ -388,3 +388,36 @@ func TestVectorCrossProduct(t *testing.T) {
 		}
 	}
 }
+
+func TestTuple(t *testing.T) {
+	var tests = []struct {
+		tuple []float64
+	}{
+		{
+			[]float64{1, 2, 3, 0},
+		}, {
+			[]float64{2, 3, 4, 0},
+		}, {
+			[]float64{-1, 2, -1, 0},
+		}, {
+			[]float64{1, -2, 1, 0},
+		},
+	}
+
+	for _, test := range tests {
+		p := MakePoint(test.tuple[0], test.tuple[1], test.tuple[2])
+		pt := p.Tuple()
+		if pt[0] != p.X || pt[1] != p.Y || pt[2] != p.Z || pt[3] != 1 {
+			t.Errorf(
+				"The Tuple of point %+v was %+v, expected %+v.", p, pt, test.tuple,
+			)
+		}
+		v := MakeVector(test.tuple[0], test.tuple[1], test.tuple[2])
+		vt := v.Tuple()
+		if vt[0] != p.X || vt[1] != p.Y || vt[2] != p.Z || vt[3] != 0 {
+			t.Errorf(
+				"The Tuple of vector %+v was %+v, expected %+v.", v, vt, test.tuple,
+			)
+		}
+	}
+}

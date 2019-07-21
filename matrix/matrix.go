@@ -202,7 +202,7 @@ func IdentityMatrix(size int) Matrix {
 }
 
 // Translation returns a traslation transform matrix.
-func Translation(x, y, z float64) Matrix {
+func TranslationMatrix(x, y, z float64) Matrix {
 	m := IdentityMatrix(4)
 	m.Cells[0][3] = x
 	m.Cells[1][3] = y
@@ -211,7 +211,7 @@ func Translation(x, y, z float64) Matrix {
 }
 
 // Scaling returns a scaling transform matrix.
-func Scaling(x, y, z float64) Matrix {
+func ScalingMatrix(x, y, z float64) Matrix {
 	m := IdentityMatrix(4)
 	m.Cells[0][0] = x
 	m.Cells[1][1] = y
@@ -220,7 +220,7 @@ func Scaling(x, y, z float64) Matrix {
 }
 
 // RotationX returns a rotation matrix for the x axis
-func RotationX(radians float64) Matrix {
+func RotationXMatrix(radians float64) Matrix {
 	m := IdentityMatrix(4)
 	m.Cells[1][1] = math.Cos(radians)
 	m.Cells[1][2] = -math.Sin(radians)
@@ -230,7 +230,7 @@ func RotationX(radians float64) Matrix {
 }
 
 // RotationY returns a rotation matrix for the x axis
-func RotationY(radians float64) Matrix {
+func RotationYMatrix(radians float64) Matrix {
 	m := IdentityMatrix(4)
 	m.Cells[0][0] = math.Cos(radians)
 	m.Cells[0][2] = math.Sin(radians)
@@ -240,7 +240,7 @@ func RotationY(radians float64) Matrix {
 }
 
 // RotationZ returns a rotation matrix for the x axis
-func RotationZ(radians float64) Matrix {
+func RotationZMatrix(radians float64) Matrix {
 	m := IdentityMatrix(4)
 	m.Cells[0][0] = math.Cos(radians)
 	m.Cells[0][1] = -math.Sin(radians)
@@ -250,7 +250,7 @@ func RotationZ(radians float64) Matrix {
 }
 
 // Shearing returns a shearing transformation matrix
-func Shearing(Xy, Xz, Yx, Yz, Zx, Zy float64) Matrix {
+func ShearingMatrix(Xy, Xz, Yx, Yz, Zx, Zy float64) Matrix {
 	m := IdentityMatrix(4)
 	m.Cells[0][1] = Xy
 	m.Cells[0][2] = Xz

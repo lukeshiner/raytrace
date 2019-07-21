@@ -2,6 +2,7 @@ package matrix
 
 import (
 	"errors"
+	"math"
 
 	"github.com/lukeshiner/raytrace/comparison"
 )
@@ -215,5 +216,35 @@ func Scaling(x, y, z float64) Matrix {
 	m.Cells[0][0] = x
 	m.Cells[1][1] = y
 	m.Cells[2][2] = z
+	return m
+}
+
+// RotationX returns a rotation matrix for the x axis
+func RotationX(radians float64) Matrix {
+	m := IdentityMatrix(4)
+	m.Cells[1][1] = math.Cos(radians)
+	m.Cells[1][2] = -math.Sin(radians)
+	m.Cells[2][1] = math.Sin(radians)
+	m.Cells[2][2] = math.Cos(radians)
+	return m
+}
+
+// RotationY returns a rotation matrix for the x axis
+func RotationY(radians float64) Matrix {
+	m := IdentityMatrix(4)
+	m.Cells[0][0] = math.Cos(radians)
+	m.Cells[0][2] = math.Sin(radians)
+	m.Cells[2][0] = -math.Sin(radians)
+	m.Cells[2][2] = math.Cos(radians)
+	return m
+}
+
+// RotationZ returns a rotation matrix for the x axis
+func RotationZ(radians float64) Matrix {
+	m := IdentityMatrix(4)
+	m.Cells[0][0] = math.Cos(radians)
+	m.Cells[0][1] = -math.Sin(radians)
+	m.Cells[1][0] = math.Sin(radians)
+	m.Cells[1][1] = math.Cos(radians)
 	return m
 }

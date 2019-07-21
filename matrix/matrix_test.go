@@ -1,6 +1,7 @@
 package matrix
 
 import (
+	"math"
 	"testing"
 
 	"github.com/lukeshiner/raytrace/vector"
@@ -940,6 +941,119 @@ func TestInverseScalingOfPoint(t *testing.T) {
 			t.Errorf(
 				"Scaling of point %+v by inverse of scaling %+v was %+v, expected %+v",
 				test.point, test.transform, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+// Rotation
+
+func TestRotationXofPoint(t *testing.T) {
+	var tests = []struct {
+		rotation        float64
+		point, expected vector.Vector
+	}{
+		{
+			rotation: math.Pi / 4,
+			point:    vector.MakePoint(0, 1, 0),
+			expected: vector.MakePoint(0, math.Sqrt(2)/2, math.Sqrt(2)/2),
+		},
+		{
+			rotation: math.Pi / 2,
+			point:    vector.MakePoint(0, 1, 0),
+			expected: vector.MakePoint(0, 0, 1),
+		},
+	}
+	for _, test := range tests {
+		r := RotationX(test.rotation)
+		value := MultiplyTuple(r, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"X Rotation of point %+v by %+v was %+v, expected %+v",
+				test.point, test.rotation, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+func TestInverseRotationXofPoint(t *testing.T) {
+	var tests = []struct {
+		rotation        float64
+		point, expected vector.Vector
+	}{
+		{
+			rotation: math.Pi / 4,
+			point:    vector.MakePoint(0, 1, 0),
+			expected: vector.MakePoint(0, math.Sqrt(2)/2, -math.Sqrt(2)/2),
+		},
+	}
+	for _, test := range tests {
+		r, _ := RotationX(test.rotation).Invert()
+		value := MultiplyTuple(r, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if vector.EqualVectors(&test.expected, &valuePoint) != true {
+			t.Errorf(
+				"Inverse X Rotation of point %+v by %+v was %+v, expected %+v",
+				test.point, test.rotation, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+func TestRotationYofPoint(t *testing.T) {
+	var tests = []struct {
+		rotation        float64
+		point, expected vector.Vector
+	}{
+		{
+			rotation: math.Pi / 4,
+			point:    vector.MakePoint(0, 0, 1),
+			expected: vector.MakePoint(math.Sqrt(2)/2, 0, math.Sqrt(2)/2),
+		},
+		{
+			rotation: math.Pi / 2,
+			point:    vector.MakePoint(0, 0, 1),
+			expected: vector.MakePoint(1, 0, 0),
+		},
+	}
+	for _, test := range tests {
+		r := RotationY(test.rotation)
+		value := MultiplyTuple(r, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Y Rotation of point %+v by %+v was %+v, expected %+v",
+				test.point, test.rotation, valuePoint, test.expected,
+			)
+		}
+	}
+}
+
+func TestRotationZofPoint(t *testing.T) {
+	var tests = []struct {
+		rotation        float64
+		point, expected vector.Vector
+	}{
+		{
+			rotation: math.Pi / 4,
+			point:    vector.MakePoint(0, 1, 0),
+			expected: vector.MakePoint(-math.Sqrt(2)/2, math.Sqrt(2)/2, 0),
+		},
+		{
+			rotation: math.Pi / 2,
+			point:    vector.MakePoint(0, 1, 0),
+			expected: vector.MakePoint(-1, 0, 0),
+		},
+	}
+	for _, test := range tests {
+		r := RotationZ(test.rotation)
+		value := MultiplyTuple(r, test.point.Tuple())
+		valuePoint := vector.MakePoint(value[0], value[1], value[2])
+		if test.expected.Equal(&valuePoint) != true {
+			t.Errorf(
+				"Z Rotation of point %+v by %+v was %+v, expected %+v",
+				test.point, test.rotation, valuePoint, test.expected,
 			)
 		}
 	}

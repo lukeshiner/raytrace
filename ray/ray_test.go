@@ -6,6 +6,7 @@ import (
 
 	"github.com/lukeshiner/raytrace/comparison"
 	"github.com/lukeshiner/raytrace/matrix"
+	"github.com/lukeshiner/raytrace/object"
 	"github.com/lukeshiner/raytrace/vector"
 )
 
@@ -70,32 +71,32 @@ func TestPosition(t *testing.T) {
 func TestIntersect(t *testing.T) {
 	var tests = []struct {
 		ray      Ray
-		sphere   Sphere
+		sphere   object.Sphere
 		expected []float64
 	}{
 		{
 			ray:      New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1)),
-			sphere:   NewSphere(),
+			sphere:   object.NewSphere(),
 			expected: []float64{4.0, 6.0},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 1, -5), vector.NewVector(0, 0, 1)),
-			sphere:   NewSphere(),
+			sphere:   object.NewSphere(),
 			expected: []float64{5.0, 5.0},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 2, -5), vector.NewVector(0, 0, 1)),
-			sphere:   NewSphere(),
+			sphere:   object.NewSphere(),
 			expected: []float64{},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 0, 0), vector.NewVector(0, 0, 1)),
-			sphere:   NewSphere(),
+			sphere:   object.NewSphere(),
 			expected: []float64{-1.0, 1.0},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 0, 5), vector.NewVector(0, 0, 1)),
-			sphere:   NewSphere(),
+			sphere:   object.NewSphere(),
 			expected: []float64{-6.0, -4.0},
 		},
 	}
@@ -114,11 +115,11 @@ func TestIntersect(t *testing.T) {
 func TestIntersection(t *testing.T) {
 	var tests = []struct {
 		t float64
-		o Sphere
+		o object.Sphere
 	}{
 		{
 			t: 3.5,
-			o: NewSphere(),
+			o: object.NewSphere(),
 		},
 	}
 	for _, test := range tests {
@@ -130,7 +131,7 @@ func TestIntersection(t *testing.T) {
 }
 
 func TestIntersections(t *testing.T) {
-	s := NewSphere()
+	s := object.NewSphere()
 	i1 := Intersection{1, s}
 	i2 := Intersection{2, s}
 	xs := Intersections{[]Intersection{i1, i2}}
@@ -141,7 +142,7 @@ func TestIntersections(t *testing.T) {
 
 func TestIntersectionsSetsObject(t *testing.T) {
 	ray := New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1))
-	sphere := NewSphere()
+	sphere := object.NewSphere()
 	xs := Intersect(sphere, ray)
 	if xs.Get(0).Object.ID != sphere.ID || xs.Get(1).Object.ID != sphere.ID {
 		t.Error("Intersect did not set object.")
@@ -156,33 +157,33 @@ func TestHit(t *testing.T) {
 	}{
 		{
 			intersections: NewIntersections(
-				NewIntersection(1, NewSphere()),
-				NewIntersection(2, NewSphere()),
+				NewIntersection(1, object.NewSphere()),
+				NewIntersection(2, object.NewSphere()),
 			),
 			expectNil: false,
 			expected:  1,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(-1, NewSphere()),
-				NewIntersection(1, NewSphere()),
+				NewIntersection(-1, object.NewSphere()),
+				NewIntersection(1, object.NewSphere()),
 			),
 			expectNil: false,
 			expected:  1,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(-2, NewSphere()),
-				NewIntersection(-1, NewSphere()),
+				NewIntersection(-2, object.NewSphere()),
+				NewIntersection(-1, object.NewSphere()),
 			),
 			expectNil: true,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(5, NewSphere()),
-				NewIntersection(7, NewSphere()),
-				NewIntersection(-3, NewSphere()),
-				NewIntersection(2, NewSphere()),
+				NewIntersection(5, object.NewSphere()),
+				NewIntersection(7, object.NewSphere()),
+				NewIntersection(-3, object.NewSphere()),
+				NewIntersection(2, object.NewSphere()),
 			),
 			expectNil: false,
 			expected:  2,
@@ -235,22 +236,6 @@ func TestTransformRay(t *testing.T) {
 	}
 }
 
-func TestDefaultSphereTransform(t *testing.T) {
-	s := NewSphere()
-	if matrix.Equal(s.Transform, matrix.IdentityMatrix(4)) != true {
-		t.Error("Sphere default transform was not the identity matrix.")
-	}
-}
-
-func TestSetTransform(t *testing.T) {
-	s := NewSphere()
-	transform := matrix.TranslationMatrix(2, 3, 4)
-	s.SetTransform(transform)
-	if matrix.Equal(s.Transform, transform) != true {
-		t.Error("Did not set transform on sphere.")
-	}
-}
-
 func TestIntersectionWithTransformedSphere(t *testing.T) {
 	var tests = []struct {
 		ray       Ray
@@ -269,78 +254,13 @@ func TestIntersectionWithTransformedSphere(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		s := NewSphere()
+		s := object.NewSphere()
 		s.SetTransform(test.transform)
 		xs := Intersect(s, test.ray)
 		if comparison.EqualSlice(xs.TSlice(), test.expected) != true {
 			t.Errorf(
 				"Intersection of ray %+v with sphere transformed by %+v gave %+v, expected %+v.",
 				test.ray, test.transform, xs.TSlice(), test.expected,
-			)
-		}
-	}
-}
-
-func TestNormalAt(t *testing.T) {
-	var tests = []struct {
-		sphere    Sphere
-		transform matrix.Matrix
-		point     vector.Vector
-		expected  vector.Vector
-	}{
-		{
-			sphere:    NewSphere(),
-			transform: matrix.IdentityMatrix(4),
-			point:     vector.NewPoint(1, 0, 0),
-			expected:  vector.NewVector(1, 0, 0),
-		},
-		{
-			sphere:    NewSphere(),
-			transform: matrix.IdentityMatrix(4),
-			point:     vector.NewPoint(0, 1, 0),
-			expected:  vector.NewVector(0, 1, 0),
-		},
-		{
-			sphere:    NewSphere(),
-			transform: matrix.IdentityMatrix(4),
-			point:     vector.NewPoint(0, 0, 1),
-			expected:  vector.NewVector(0, 0, 1),
-		},
-		{
-			sphere:    NewSphere(),
-			transform: matrix.IdentityMatrix(4),
-			point:     vector.NewPoint(math.Sqrt(3)/3, math.Sqrt(3)/3, math.Sqrt(3)/3),
-			expected:  vector.NewVector(math.Sqrt(3)/3, math.Sqrt(3)/3, math.Sqrt(3)/3),
-		},
-		{
-			sphere:    NewSphere(),
-			transform: matrix.TranslationMatrix(0, 1, 0),
-			point:     vector.NewPoint(0, 1.70711, -0.70711),
-			expected:  vector.NewVector(0, 0.70711, -0.70711),
-		},
-		{
-			sphere: NewSphere(),
-			transform: matrix.Multiply(
-				matrix.ScalingMatrix(1, 0.5, 1),
-				matrix.RotationZMatrix(math.Pi/5),
-			),
-			point:    vector.NewPoint(0, math.Sqrt(2)/2, -math.Sqrt(2)/2),
-			expected: vector.NewVector(0, 0.97014, -0.24254),
-		},
-	}
-	for _, test := range tests {
-		test.sphere.SetTransform(test.transform)
-		result := test.sphere.NormalAt(test.point)
-		if vector.Equal(result, test.expected) != true {
-			t.Errorf(
-				"The normal of sphere %+v at point %+v was %+v, expected %+v.",
-				test.sphere, test.point, result, test.expected,
-			)
-		}
-		if vector.Equal(result, result.Normalize()) != true {
-			t.Errorf(
-				"The normal of sphere %+v at point %+v was not normalized.",
-				test.sphere, test.point,
 			)
 		}
 	}

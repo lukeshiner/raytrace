@@ -3,22 +3,12 @@ package ray
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"sort"
 
 	"github.com/lukeshiner/raytrace/matrix"
+	"github.com/lukeshiner/raytrace/object"
 	"github.com/lukeshiner/raytrace/vector"
 )
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func generateID() string {
-	b := make([]rune, 100)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
-}
 
 // Ray is the struct for raytracer rays.
 type Ray struct {
@@ -37,27 +27,6 @@ func (r *Ray) Transform(m matrix.Matrix) Ray {
 	return New(origin, direction)
 }
 
-// Sphere is the struct for spheres
-type Sphere struct {
-	ID        string
-	Transform matrix.Matrix
-}
-
-// SetTransform sets the transform matrix for a sphere.
-func (s *Sphere) SetTransform(m matrix.Matrix) {
-	s.Transform = m
-}
-
-// NormalAt returns the normal vector of the sphere at the given point.
-func (s *Sphere) NormalAt(p vector.Vector) vector.Vector {
-	transform, _ := s.Transform.Invert()
-	objectPoint := vector.MultiplyMatrixByVector(transform, p)
-	normal := vector.Subtract(objectPoint, vector.NewPoint(0, 0, 0))
-	worldNormal := vector.MultiplyMatrixByVector(transform.Transpose(), normal)
-	worldNormal.W = 0
-	return worldNormal.Normalize()
-}
-
 // Reflect returns the reflection of a vector around a normal.
 func Reflect(in, normal vector.Vector) vector.Vector {
 	var v vector.Vector
@@ -69,7 +38,7 @@ func Reflect(in, normal vector.Vector) vector.Vector {
 // Intersection holds an intersection.
 type Intersection struct {
 	T      float64
-	Object Sphere
+	Object object.Sphere
 }
 
 // Intersections holds a slice of Intersection.
@@ -111,12 +80,12 @@ func (i *Intersections) Hit() (Intersection, error) {
 			return intersection, nil
 		}
 	}
-	return NewIntersection(0, NewSphere()), fmt.Errorf("No intersections hit")
+	return NewIntersection(0, object.NewSphere()), fmt.Errorf("No intersections hit")
 }
 
 // NewIntersection returns an Intersection instance.
-func NewIntersection(t float64, object Sphere) Intersection {
-	return Intersection{T: t, Object: object}
+func NewIntersection(t float64, obj object.Sphere) Intersection {
+	return Intersection{T: t, Object: obj}
 }
 
 // NewIntersections returns a new Intersections list.
@@ -131,13 +100,8 @@ func New(origin, direction vector.Vector) Ray {
 	return Ray{Origin: origin, Direction: direction}
 }
 
-// NewSphere returns a unit sphere at the origin
-func NewSphere() Sphere {
-	return Sphere{ID: generateID(), Transform: matrix.IdentityMatrix(4)}
-}
-
 // Intersect returns a list of intersectioins between ray and sphere.
-func Intersect(sphere Sphere, ray Ray) Intersections {
+func Intersect(sphere object.Sphere, ray Ray) Intersections {
 	transform, _ := sphere.Transform.Invert()
 	tRay := ray.Transform(transform)
 	sphereToRay := vector.Subtract(tRay.Origin, vector.NewPoint(0, 0, 0))

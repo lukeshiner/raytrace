@@ -26,7 +26,7 @@ func TestCanvas(t *testing.T) {
 
 func TestWritePixel(t *testing.T) {
 	canvas := New(10, 20)
-	red := colour.Colour{Red: 1, Green: 0, Blue: 0}
+	red := colour.New(1, 0, 0)
 	canvas.WritePixel(2, 3, red)
 	if canvas.Pixel(2, 3).Equal(red) != true {
 		t.Error("Error retriening pixel from canvas.")
@@ -49,11 +49,11 @@ func TestPPMFormatPixel(t *testing.T) {
 		colour   colour.Colour
 		expected string
 	}{
-		{colour.Colour{Red: 0, Green: 0, Blue: 0}, "0 0 0"},
-		{colour.Colour{Red: 1, Green: 0, Blue: 0}, "255 0 0"},
-		{colour.Colour{Red: 0, Green: 0.5, Blue: 0}, "0 128 0"},
-		{colour.Colour{Red: 0, Green: 0, Blue: -5}, "0 0 0"},
-		{colour.Colour{Red: 1.5, Green: 0, Blue: -5}, "255 0 0"},
+		{colour.New(0, 0, 0), "0 0 0"},
+		{colour.New(1, 0, 0), "255 0 0"},
+		{colour.New(0, 0.5, 0), "0 128 0"},
+		{colour.New(0, 0, -5), "0 0 0"},
+		{colour.New(1.5, 0, -5), "255 0 0"},
 	}
 
 	for _, test := range tests {
@@ -68,9 +68,9 @@ func TestPPMFormatPixel(t *testing.T) {
 
 func TestPPMPixelData(t *testing.T) {
 	canvas := New(5, 3)
-	c1 := colour.Colour{Red: 1.5, Green: 0, Blue: 0}
-	c2 := colour.Colour{Red: 0, Green: 0.5, Blue: 0}
-	c3 := colour.Colour{Red: -0.5, Green: 0, Blue: 1}
+	c1 := colour.New(1.5, 0, 0)
+	c2 := colour.New(0, 0.5, 0)
+	c3 := colour.New(-0.5, 0, 1)
 	canvas.WritePixel(0, 0, c1)
 	canvas.WritePixel(2, 1, c2)
 	canvas.WritePixel(4, 2, c3)
@@ -85,7 +85,7 @@ func TestPPMPixelData(t *testing.T) {
 
 func TestPPMLineLength(t *testing.T) {
 	canvas := New(10, 2)
-	colour := colour.Colour{Red: 1, Green: 0.8, Blue: 0.6}
+	colour := colour.New(1, 0.8, 0.6)
 	for x := 0; x < canvas.Width; x++ {
 		for y := 0; y < canvas.Height; y++ {
 			canvas.WritePixel(x, y, colour)

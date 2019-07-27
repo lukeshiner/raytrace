@@ -90,7 +90,7 @@ func New(width, height int) Canvas {
 	for x := 0; x < width; x++ {
 		row := []colour.Colour{}
 		for y := 0; y < height; y++ {
-			row = append(row, colour.Colour{Red: 0, Green: 0, Blue: 0})
+			row = append(row, colour.New(0, 0, 0))
 		}
 		pixels = append(pixels, row)
 	}

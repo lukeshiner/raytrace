@@ -40,3 +40,8 @@ func (c Colour) ScalarMult(scalar float64) Colour {
 func (c Colour) Mult(other Colour) Colour {
 	return Colour{c.Red * other.Red, c.Green * other.Green, c.Blue * other.Blue}
 }
+
+// New returns a new Colour.
+func New(red, green, blue float64) Colour {
+	return Colour{Red: red, Green: green, Blue: blue}
+}

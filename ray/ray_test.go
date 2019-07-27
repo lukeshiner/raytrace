@@ -4,7 +4,10 @@ import (
 	"math"
 	"testing"
 
+	"github.com/lukeshiner/raytrace/colour"
 	"github.com/lukeshiner/raytrace/comparison"
+	"github.com/lukeshiner/raytrace/light"
+	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/object"
 	"github.com/lukeshiner/raytrace/vector"
@@ -287,6 +290,81 @@ func TestReflect(t *testing.T) {
 			t.Errorf(
 				"The reflection of vector %+v around normal %+v was %+v, expected %+v.",
 				test.vector, test.normal, result, test.expected,
+			)
+		}
+	}
+}
+
+func TestLighting(t *testing.T) {
+	var tests = []struct {
+		material              material.Material
+		light                 light.Point
+		position, eye, normal vector.Vector
+		expected              colour.Colour
+	}{
+		{
+			// Lighting with the eye between the light and the surface.
+			material: material.New(),
+			position: vector.NewPoint(0, 0, 0),
+			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, -10)),
+			normal:   vector.NewVector(0, 0, -1),
+			eye:      vector.NewVector(0, 0, -1),
+			expected: colour.New(1.9, 1.9, 1.9),
+		},
+		{
+			// Lighting with the eye between light and suface, eye offset 45 degrees.
+			material: material.New(),
+			position: vector.NewPoint(0, 0, 0),
+			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, -10)),
+			normal:   vector.NewVector(0, 0, -1),
+			eye:      vector.NewVector(0, math.Sqrt(2)/2, -math.Sqrt(2)/2),
+			expected: colour.New(1.0, 1.0, 1.0),
+		},
+		{
+			// Lighting with the eye opposite surface, light offset 45 degrees.
+			material: material.New(),
+			position: vector.NewPoint(0, 0, 0),
+			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 10, -10)),
+			normal:   vector.NewVector(0, 0, -1),
+			eye:      vector.NewVector(0, 0, -1),
+			expected: colour.New(0.7364, 0.7364, 0.7364),
+		},
+		{
+			// Lighting with the eye in the path of the reflection vector.
+			material: material.New(),
+			position: vector.NewPoint(0, 0, 0),
+			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 10, -10)),
+			normal:   vector.NewVector(0, 0, -1),
+			eye:      vector.NewVector(0, -math.Sqrt(2)/2, -math.Sqrt(2)/2),
+			expected: colour.New(1.6364, 1.6364, 1.6364),
+		},
+		{
+			// Lighting with the light behind the surface.
+			material: material.New(),
+			position: vector.NewPoint(0, 0, 0),
+			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, 10)),
+			normal:   vector.NewVector(0, 0, -1),
+			eye:      vector.NewVector(0, 0, -1),
+			expected: colour.New(0.1, 0.1, 0.1),
+		},
+		{
+			// Lighting with reflection away from eye.
+			material: material.New(),
+			position: vector.NewPoint(0, 10, 10),
+			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, 10)),
+			normal:   vector.NewVector(0, 0, -1),
+			eye:      vector.NewVector(0, 0, -1),
+			expected: colour.New(0.1, 0.1, 0.1),
+		},
+	}
+	for _, test := range tests {
+		result := Lighting(test.material, test.light, test.position, test.eye, test.normal)
+		if result.Equal(test.expected) != true {
+			t.Errorf(
+				"Lighting with material %+v, light %+v, position %+v, eye %+v and normal %+v "+
+					"resulted with %+v, expected %+v",
+				test.material, test.light, test.position, test.eye, test.normal, result,
+				test.expected,
 			)
 		}
 	}

@@ -5,6 +5,9 @@ import (
 	"math"
 	"sort"
 
+	"github.com/lukeshiner/raytrace/colour"
+	"github.com/lukeshiner/raytrace/light"
+	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/object"
 	"github.com/lukeshiner/raytrace/vector"
@@ -117,4 +120,32 @@ func Intersect(sphere object.Sphere, ray Ray) Intersections {
 	t2 := (-b + math.Sqrt(discriminant)) / (2 * a)
 	i2 := NewIntersection(t2, sphere)
 	return NewIntersections(i1, i2)
+}
+
+// Lighting calculates the lighting on a surface
+func Lighting(m material.Material, l light.Point, p, e, n vector.Vector) colour.Colour {
+	var diffuse, specular colour.Colour
+	effectiveColour := m.Colour.Mult(l.Intensity)
+	lightVector := vector.Subtract(l.Position, p)
+	lightVector = lightVector.Normalize()
+	ambient := effectiveColour.ScalarMult(m.Ambient)
+	lightDotNormal := vector.DotProduct(lightVector, n)
+	if lightDotNormal < 0 {
+		// Light behind surface
+		diffuse = colour.New(0, 0, 0)
+		specular = colour.New(0, 0, 0)
+	} else {
+		diffuse = effectiveColour.ScalarMult(m.Diffuse * lightDotNormal)
+		reflectVector := Reflect(lightVector.Negate(), n)
+		reflectDotEye := vector.DotProduct(reflectVector, e)
+		if reflectDotEye <= 0 {
+			// Light reflects away from eye
+			specular = colour.New(0, 0, 0)
+		} else {
+			factor := math.Pow(reflectDotEye, m.Shininess)
+			specular = l.Intensity.ScalarMult(m.Specular * factor)
+		}
+	}
+
+	return ambient.Add(diffuse.Add(specular))
 }

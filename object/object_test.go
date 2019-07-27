@@ -4,18 +4,37 @@ import (
 	"math"
 	"testing"
 
+	"github.com/lukeshiner/raytrace/colour"
+	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/vector"
 )
-
-// func TestNewShpere(t testing.T) {
-//
-// }
 
 func TestDefaultSphereTransform(t *testing.T) {
 	s := NewSphere()
 	if matrix.Equal(s.Transform, matrix.IdentityMatrix(4)) != true {
 		t.Error("Sphere default transform was not the identity matrix.")
+	}
+}
+
+func TestDefaultSphereMaterial(t *testing.T) {
+	s := NewSphere()
+	if s.Material != material.New() {
+		t.Error("Sphere default material was not correct.")
+	}
+}
+
+func TestSetMaterial(t *testing.T) {
+	m := material.New()
+	m.Colour = colour.New(0.5, 0.5, 0.5)
+	m.Ambient = 0.5
+	m.Diffuse = 0.3
+	m.Specular = 0.8
+	m.Shininess = 150.0
+	s := NewSphere()
+	s.SetMaterial(m)
+	if s.Material != m {
+		t.Error("Could not set Sphere material.")
 	}
 }
 

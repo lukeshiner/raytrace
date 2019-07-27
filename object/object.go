@@ -3,6 +3,7 @@ package object
 import (
 	"math/rand"
 
+	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/vector"
 )
@@ -10,6 +11,7 @@ import (
 // Sphere is the struct for spheres
 type Sphere struct {
 	ID        string
+	Material  material.Material
 	Transform matrix.Matrix
 }
 
@@ -28,9 +30,16 @@ func (s *Sphere) NormalAt(p vector.Vector) vector.Vector {
 	return worldNormal.Normalize()
 }
 
+// SetMaterial sets a sphere's material
+func (s *Sphere) SetMaterial(m material.Material) {
+	s.Material = m
+}
+
 // NewSphere returns a unit sphere at the origin
 func NewSphere() Sphere {
-	return Sphere{ID: generateID(), Transform: matrix.IdentityMatrix(4)}
+	return Sphere{
+		ID: generateID(), Material: material.New(), Transform: matrix.IdentityMatrix(4),
+	}
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")

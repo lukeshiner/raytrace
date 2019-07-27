@@ -1,6 +1,7 @@
 package ray
 
 import (
+	"math"
 	"testing"
 
 	"github.com/lukeshiner/raytrace/comparison"
@@ -275,6 +276,97 @@ func TestIntersectionWithTransformedSphere(t *testing.T) {
 			t.Errorf(
 				"Intersection of ray %+v with sphere transformed by %+v gave %+v, expected %+v.",
 				test.ray, test.transform, xs.TSlice(), test.expected,
+			)
+		}
+	}
+}
+
+func TestNormalAt(t *testing.T) {
+	var tests = []struct {
+		sphere    Sphere
+		transform matrix.Matrix
+		point     vector.Vector
+		expected  vector.Vector
+	}{
+		{
+			sphere:    NewSphere(),
+			transform: matrix.IdentityMatrix(4),
+			point:     vector.NewPoint(1, 0, 0),
+			expected:  vector.NewVector(1, 0, 0),
+		},
+		{
+			sphere:    NewSphere(),
+			transform: matrix.IdentityMatrix(4),
+			point:     vector.NewPoint(0, 1, 0),
+			expected:  vector.NewVector(0, 1, 0),
+		},
+		{
+			sphere:    NewSphere(),
+			transform: matrix.IdentityMatrix(4),
+			point:     vector.NewPoint(0, 0, 1),
+			expected:  vector.NewVector(0, 0, 1),
+		},
+		{
+			sphere:    NewSphere(),
+			transform: matrix.IdentityMatrix(4),
+			point:     vector.NewPoint(math.Sqrt(3)/3, math.Sqrt(3)/3, math.Sqrt(3)/3),
+			expected:  vector.NewVector(math.Sqrt(3)/3, math.Sqrt(3)/3, math.Sqrt(3)/3),
+		},
+		{
+			sphere:    NewSphere(),
+			transform: matrix.TranslationMatrix(0, 1, 0),
+			point:     vector.NewPoint(0, 1.70711, -0.70711),
+			expected:  vector.NewVector(0, 0.70711, -0.70711),
+		},
+		{
+			sphere: NewSphere(),
+			transform: matrix.Multiply(
+				matrix.ScalingMatrix(1, 0.5, 1),
+				matrix.RotationZMatrix(math.Pi/5),
+			),
+			point:    vector.NewPoint(0, math.Sqrt(2)/2, -math.Sqrt(2)/2),
+			expected: vector.NewVector(0, 0.97014, -0.24254),
+		},
+	}
+	for _, test := range tests {
+		test.sphere.SetTransform(test.transform)
+		result := test.sphere.NormalAt(test.point)
+		if vector.Equal(result, test.expected) != true {
+			t.Errorf(
+				"The normal of sphere %+v at point %+v was %+v, expected %+v.",
+				test.sphere, test.point, result, test.expected,
+			)
+		}
+		if vector.Equal(result, result.Normalize()) != true {
+			t.Errorf(
+				"The normal of sphere %+v at point %+v was not normalized.",
+				test.sphere, test.point,
+			)
+		}
+	}
+}
+
+func TestReflect(t *testing.T) {
+	var tests = []struct {
+		vector, normal, expected vector.Vector
+	}{
+		{
+			vector:   vector.NewVector(1, -1, 0),
+			normal:   vector.NewVector(0, 1, 0),
+			expected: vector.NewVector(1, 1, 0),
+		},
+		{
+			vector:   vector.NewVector(0, -1, 0),
+			normal:   vector.NewVector(math.Sqrt(2)/2, math.Sqrt(2)/2, 0),
+			expected: vector.NewVector(1, 0, 0),
+		},
+	}
+	for _, test := range tests {
+		result := Reflect(test.vector, test.normal)
+		if vector.Equal(result, test.expected) != true {
+			t.Errorf(
+				"The reflection of vector %+v around normal %+v was %+v, expected %+v.",
+				test.vector, test.normal, result, test.expected,
 			)
 		}
 	}

@@ -48,6 +48,24 @@ func (s *Sphere) SetTransform(m matrix.Matrix) {
 	s.Transform = m
 }
 
+// NormalAt returns the normal vector of the sphere at the given point.
+func (s *Sphere) NormalAt(p vector.Vector) vector.Vector {
+	transform, _ := s.Transform.Invert()
+	objectPoint := vector.MultiplyMatrixByVector(transform, p)
+	normal := vector.Subtract(objectPoint, vector.NewPoint(0, 0, 0))
+	worldNormal := vector.MultiplyMatrixByVector(transform.Transpose(), normal)
+	worldNormal.W = 0
+	return worldNormal.Normalize()
+}
+
+// Reflect returns the reflection of a vector around a normal.
+func Reflect(in, normal vector.Vector) vector.Vector {
+	var v vector.Vector
+	v = normal.ScalarMultiply(2)
+	v = v.ScalarMultiply(vector.DotProduct(in, normal))
+	return vector.Subtract(in, v)
+}
+
 // Intersection holds an intersection.
 type Intersection struct {
 	T      float64

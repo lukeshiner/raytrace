@@ -104,7 +104,7 @@ func TestIntersect(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		intersections := Intersect(test.sphere, test.ray)
+		intersections := Intersect(&test.sphere, test.ray)
 		xs := intersections.TSlice()
 		if comparison.EqualSlice(xs, test.expected) != true {
 			t.Errorf(
@@ -126,8 +126,8 @@ func TestIntersection(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		intersection := Intersection{test.t, test.o}
-		if intersection.T != test.t || intersection.Object.ID != test.o.ID {
+		intersection := NewIntersection(test.t, &test.o)
+		if intersection.T != test.t || intersection.Object.ID() != test.o.ID() {
 			t.Error("Error creating Intersection")
 		}
 	}
@@ -135,9 +135,9 @@ func TestIntersection(t *testing.T) {
 
 func TestIntersections(t *testing.T) {
 	s := object.NewSphere()
-	i1 := Intersection{1, s}
-	i2 := Intersection{2, s}
-	xs := Intersections{[]Intersection{i1, i2}}
+	i1 := NewIntersection(1, &s)
+	i2 := NewIntersection(2, &s)
+	xs := NewIntersections(i1, i2)
 	if xs.Count() != 2 || xs.Get(0).T != 1 || xs.Get(1).T != 2 {
 		t.Error("Intersect did not set object.")
 	}
@@ -146,13 +146,14 @@ func TestIntersections(t *testing.T) {
 func TestIntersectionsSetsObject(t *testing.T) {
 	ray := New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1))
 	sphere := object.NewSphere()
-	xs := Intersect(sphere, ray)
-	if xs.Get(0).Object.ID != sphere.ID || xs.Get(1).Object.ID != sphere.ID {
+	xs := Intersect(&sphere, ray)
+	if xs.Get(0).Object.ID() != sphere.ID() || xs.Get(1).Object.ID() != sphere.ID() {
 		t.Error("Intersect did not set object.")
 	}
 }
 
 func TestHit(t *testing.T) {
+	s := object.NewSphere()
 	var tests = []struct {
 		intersections Intersections
 		expectNil     bool
@@ -160,33 +161,33 @@ func TestHit(t *testing.T) {
 	}{
 		{
 			intersections: NewIntersections(
-				NewIntersection(1, object.NewSphere()),
-				NewIntersection(2, object.NewSphere()),
+				NewIntersection(1, &s),
+				NewIntersection(2, &s),
 			),
 			expectNil: false,
 			expected:  1,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(-1, object.NewSphere()),
-				NewIntersection(1, object.NewSphere()),
+				NewIntersection(-1, &s),
+				NewIntersection(1, &s),
 			),
 			expectNil: false,
 			expected:  1,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(-2, object.NewSphere()),
-				NewIntersection(-1, object.NewSphere()),
+				NewIntersection(-2, &s),
+				NewIntersection(-1, &s),
 			),
 			expectNil: true,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(5, object.NewSphere()),
-				NewIntersection(7, object.NewSphere()),
-				NewIntersection(-3, object.NewSphere()),
-				NewIntersection(2, object.NewSphere()),
+				NewIntersection(5, &s),
+				NewIntersection(7, &s),
+				NewIntersection(-3, &s),
+				NewIntersection(2, &s),
 			),
 			expectNil: false,
 			expected:  2,
@@ -259,7 +260,7 @@ func TestIntersectionWithTransformedSphere(t *testing.T) {
 	for _, test := range tests {
 		s := object.NewSphere()
 		s.SetTransform(test.transform)
-		xs := Intersect(s, test.ray)
+		xs := Intersect(&s, test.ray)
 		if comparison.EqualSlice(xs.TSlice(), test.expected) != true {
 			t.Errorf(
 				"Intersection of ray %+v with sphere transformed by %+v gave %+v, expected %+v.",
@@ -367,5 +368,21 @@ func TestLighting(t *testing.T) {
 				test.expected,
 			)
 		}
+	}
+}
+
+func TestAddIntersections(t *testing.T) {
+	o1 := object.NewSphere()
+	o2 := object.NewSphere()
+	i1 := NewIntersections(NewIntersection(9.8, &o1), NewIntersection(5.6, &o1))
+	i2 := NewIntersections(NewIntersection(2.4, &o2), NewIntersection(10.5, &o2))
+	ins := CombineIntersections(i1, i2)
+	if len(ins.Intersections) != 4 {
+		t.Error("Wrong number of intersections.")
+	}
+	values := ins.TSlice()
+	expected := []float64{2.4, 5.6, 9.8, 10.5}
+	if comparison.EqualSlice(values, expected) != true {
+		t.Errorf("Intersection combination returned %+v, expected %+v.", values, expected)
 	}
 }

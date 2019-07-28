@@ -41,7 +41,7 @@ func Reflect(in, normal vector.Vector) vector.Vector {
 // Intersection holds an intersection.
 type Intersection struct {
 	T      float64
-	Object object.Sphere
+	Object object.Object
 }
 
 // Intersections holds a slice of Intersection.
@@ -83,11 +83,11 @@ func (i *Intersections) Hit() (Intersection, error) {
 			return intersection, nil
 		}
 	}
-	return NewIntersection(0, object.NewSphere()), fmt.Errorf("No intersections hit")
+	return NewIntersection(0, nil), fmt.Errorf("No intersections hit")
 }
 
 // NewIntersection returns an Intersection instance.
-func NewIntersection(t float64, obj object.Sphere) Intersection {
+func NewIntersection(t float64, obj object.Object) Intersection {
 	return Intersection{T: t, Object: obj}
 }
 
@@ -98,14 +98,26 @@ func NewIntersections(i ...Intersection) Intersections {
 	return intersections
 }
 
+// CombineIntersections returns combined intersection lists.
+func CombineIntersections(intersections ...Intersections) Intersections {
+	ins := NewIntersections()
+	for i := 0; i < len(intersections); i++ {
+		for x := 0; x < len(intersections[i].Intersections); x++ {
+			ins.Intersections = append(ins.Intersections, intersections[i].Intersections[x])
+		}
+	}
+	ins.sort()
+	return ins
+}
+
 // New creates a new Ray struct.
 func New(origin, direction vector.Vector) Ray {
 	return Ray{Origin: origin, Direction: direction}
 }
 
-// Intersect returns a list of intersectioins between ray and sphere.
-func Intersect(sphere object.Sphere, ray Ray) Intersections {
-	transform, _ := sphere.Transform.Invert()
+// Intersect returns a list of intersectioins between ray and an object.
+func Intersect(o object.Object, ray Ray) Intersections {
+	transform, _ := o.Transform().Invert()
 	tRay := ray.Transform(transform)
 	sphereToRay := vector.Subtract(tRay.Origin, vector.NewPoint(0, 0, 0))
 	a := vector.DotProduct(tRay.Direction, tRay.Direction)
@@ -116,17 +128,17 @@ func Intersect(sphere object.Sphere, ray Ray) Intersections {
 		return Intersections{}
 	}
 	t1 := (-b - math.Sqrt(discriminant)) / (2 * a)
-	i1 := NewIntersection(t1, sphere)
+	i1 := NewIntersection(t1, o)
 	t2 := (-b + math.Sqrt(discriminant)) / (2 * a)
-	i2 := NewIntersection(t2, sphere)
+	i2 := NewIntersection(t2, o)
 	return NewIntersections(i1, i2)
 }
 
 // Lighting calculates the lighting on a surface
 func Lighting(m material.Material, l light.Point, p, e, n vector.Vector) colour.Colour {
 	var diffuse, specular colour.Colour
-	effectiveColour := m.Colour.Mult(l.Intensity)
-	lightVector := vector.Subtract(l.Position, p)
+	effectiveColour := m.Colour.Mult(l.Intensity())
+	lightVector := vector.Subtract(l.Position(), p)
 	lightVector = lightVector.Normalize()
 	ambient := effectiveColour.ScalarMult(m.Ambient)
 	lightDotNormal := vector.DotProduct(lightVector, n)
@@ -143,7 +155,7 @@ func Lighting(m material.Material, l light.Point, p, e, n vector.Vector) colour.
 			specular = colour.New(0, 0, 0)
 		} else {
 			factor := math.Pow(reflectDotEye, m.Shininess)
-			specular = l.Intensity.ScalarMult(m.Specular * factor)
+			specular = l.Intensity().ScalarMult(m.Specular * factor)
 		}
 	}
 

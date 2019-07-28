@@ -12,14 +12,14 @@ import (
 
 func TestDefaultSphereTransform(t *testing.T) {
 	s := NewSphere()
-	if matrix.Equal(s.Transform, matrix.IdentityMatrix(4)) != true {
+	if matrix.Equal(s.Transform(), matrix.IdentityMatrix(4)) != true {
 		t.Error("Sphere default transform was not the identity matrix.")
 	}
 }
 
 func TestDefaultSphereMaterial(t *testing.T) {
 	s := NewSphere()
-	if s.Material != material.New() {
+	if s.Material() != material.New() {
 		t.Error("Sphere default material was not correct.")
 	}
 }
@@ -33,7 +33,7 @@ func TestSetMaterial(t *testing.T) {
 	m.Shininess = 150.0
 	s := NewSphere()
 	s.SetMaterial(m)
-	if s.Material != m {
+	if s.Material() != m {
 		t.Error("Could not set Sphere material.")
 	}
 }
@@ -42,7 +42,7 @@ func TestSetTransform(t *testing.T) {
 	s := NewSphere()
 	transform := matrix.TranslationMatrix(2, 3, 4)
 	s.SetTransform(transform)
-	if matrix.Equal(s.Transform, transform) != true {
+	if matrix.Equal(s.transform, transform) != true {
 		t.Error("Did not set transform on sphere.")
 	}
 }

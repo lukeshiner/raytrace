@@ -6,6 +6,7 @@ import (
 	"github.com/lukeshiner/raytrace/colour"
 	"github.com/lukeshiner/raytrace/comparison"
 	"github.com/lukeshiner/raytrace/light"
+	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/object"
 	"github.com/lukeshiner/raytrace/ray"
@@ -79,26 +80,132 @@ func TestIntersectWorld(t *testing.T) {
 }
 
 func TestPrepareComputations(t *testing.T) {
-	r := ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1))
-	s := object.NewSphere()
-	i := ray.NewIntersection(4, &s)
-	comps := PrepareComputations(i, r)
-	expectedPoint := vector.NewPoint(0, 0, -1)
-	expectedEyeV := vector.NewVector(0, 0, -1)
-	expectedNormalv := vector.NewVector(0, 0, -1)
-	if comps.T != i.T {
-		t.Errorf("Comps.T was %v, expected %v.", comps.T, i.T)
+	var tests = []struct {
+		ray                                          ray.Ray
+		intersection                                 ray.Intersection
+		expectedPoint, expectedEyeV, expectedNormalV vector.Vector
+		expectedInside                               bool
+	}{
+		{
+			// The hit, when an intersection occurs on the outside.
+			ray:             ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1)),
+			intersection:    ray.NewIntersection(4, object.NewSphere()),
+			expectedPoint:   vector.NewPoint(0, 0, -1),
+			expectedEyeV:    vector.NewVector(0, 0, -1),
+			expectedNormalV: vector.NewVector(0, 0, -1),
+			expectedInside:  false,
+		},
+		{
+			// The hit, when an intersection occurs on the inside.
+			ray:             ray.New(vector.NewPoint(0, 0, 0), vector.NewVector(0, 0, 1)),
+			intersection:    ray.NewIntersection(1, object.NewSphere()),
+			expectedPoint:   vector.NewPoint(0, 0, 1),
+			expectedEyeV:    vector.NewVector(0, 0, -1),
+			expectedNormalV: vector.NewVector(0, 0, -1),
+			expectedInside:  true,
+		},
 	}
-	if comps.Object.ID() != s.ID() {
-		t.Errorf("Comps.Object was %+v, expected %+v.", comps.Object, s)
+	for _, test := range tests {
+		comps := PrepareComputations(test.intersection, test.ray)
+		if comps.T != test.intersection.T {
+			t.Errorf("Comps.T was %v, expected %v.", comps.T, test.intersection.T)
+		}
+		if comps.Object.ID() != test.intersection.Object.ID() {
+			t.Errorf("Comps.Object was %+v, expected %+v.", comps.Object, test.intersection.Object)
+		}
+		if vector.Equal(comps.Point, test.expectedPoint) != true {
+			t.Errorf("Comps.Point was %+v, expected %+v.", comps.Point, test.expectedPoint)
+		}
+		if vector.Equal(comps.EyeV, test.expectedEyeV) != true {
+			t.Errorf("Comps.EyeV was %+v, expected %+v.", comps.EyeV, test.expectedEyeV)
+		}
+		if vector.Equal(comps.EyeV, test.expectedNormalV) != true {
+			t.Errorf("Comps.NormalV was %+v, expected %+v.", comps.NormalV, test.expectedNormalV)
+		}
+		if comps.Inside != test.expectedInside {
+			t.Errorf("Comps.Inside was %v, expected %v.", comps.Inside, test.expectedInside)
+		}
 	}
-	if vector.Equal(comps.Point, expectedPoint) != true {
-		t.Errorf("Comps.Point was %+v, expected %+v.", comps.Point, expectedPoint)
+}
+
+func TestShadeHit(t *testing.T) {
+	var tests = []struct {
+		world       World
+		light       light.Light
+		ray         ray.Ray
+		objectIndex int
+		t           float64
+		expected    colour.Colour
+	}{
+		{
+			// Shading an intersection.
+			world:       Default(),
+			light:       nil,
+			ray:         ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1)),
+			objectIndex: 0,
+			t:           4,
+			expected:    colour.New(0.38066, 0.47583, 0.2855),
+		},
+		{
+			// Shading an intersection from inside.
+			world:       Default(),
+			light:       light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0.25, 0)),
+			ray:         ray.New(vector.NewPoint(0, 0, 0), vector.NewVector(0, 0, 1)),
+			objectIndex: 1,
+			t:           0.5,
+			expected:    colour.New(0.90498, 0.90498, 0.90498),
+		},
 	}
-	if vector.Equal(comps.EyeV, expectedEyeV) != true {
-		t.Errorf("Comps.EyeV was %+v, expected %+v.", comps.EyeV, expectedEyeV)
+	for _, test := range tests {
+		if test.light != nil {
+			test.world.Lights[0] = test.light
+		}
+		i := ray.NewIntersection(test.t, test.world.Objects[test.objectIndex])
+		comps := PrepareComputations(i, test.ray)
+		result := ShadeHit(test.world, comps)
+		if result.Equal(test.expected) != true {
+			t.Errorf("Shade hit returned %v, expected %v.", result, test.expected)
+		}
 	}
-	if vector.Equal(comps.EyeV, expectedNormalv) != true {
-		t.Errorf("Comps.NormalV was %+v, expected %+v.", comps.NormalV, expectedNormalv)
+}
+
+func TestColourAt(t *testing.T) {
+	var tests = []struct {
+		ray      ray.Ray
+		expected colour.Colour
+	}{
+		{
+			// The colour when a ray misses.
+			ray:      ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 1, 0)),
+			expected: colour.New(0, 0, 0),
+		},
+		{
+			// The colour with an intersection hits.
+			ray:      ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1)),
+			expected: colour.New(0.38066, 0.47583, 0.2855),
+		},
+	}
+	for _, test := range tests {
+		w := Default()
+		result := ColourAt(w, test.ray)
+		if result.Equal(test.expected) != true {
+			t.Errorf("ColourAt returned %v, expected %v.", result, test.expected)
+		}
+	}
+}
+
+func TestColourAtWithIntersectionBehindRay(t *testing.T) {
+	w := Default()
+	m := material.New()
+	m.Ambient = 1
+	w.Objects[0].SetMaterial(m)
+	m2 := material.New()
+	m2.Ambient = 1
+	w.Objects[1].SetMaterial(m2)
+	r := ray.New(vector.NewPoint(0, 0, 0.75), vector.NewVector(0, 0, -1))
+	expected := w.Objects[1].Material().Colour
+	result := ColourAt(w, r)
+	if result.Equal(expected) != true {
+		t.Errorf("ColourAt returned %v, expected %v.", result, expected)
 	}
 }

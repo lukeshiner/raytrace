@@ -33,8 +33,8 @@ func Default() World {
 	s2 := object.NewSphere()
 	s2.SetTransform(matrix.ScalingMatrix(0.5, 0.5, 0.5))
 	l := light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(-10, 10, -10))
-	w.Objects = []object.Object{&s1, &s2}
-	w.Lights = []light.Light{&l}
+	w.Objects = []object.Object{s1, s2}
+	w.Lights = []light.Light{l}
 	return w
 }
 
@@ -52,12 +52,44 @@ type Comps struct {
 	T                    float64
 	Object               object.Object
 	Point, EyeV, NormalV vector.Vector
+	Inside               bool
 }
 
 // PrepareComputations returns a Comps for an intersection and a ray.
 func PrepareComputations(i ray.Intersection, r ray.Ray) Comps {
+	inside := false
 	point := r.Position(i.T)
 	eyeV := r.Direction.Negate()
 	normalV := i.Object.NormalAt(point)
-	return Comps{T: i.T, Object: i.Object, Point: point, EyeV: eyeV, NormalV: normalV}
+	if vector.DotProduct(normalV, eyeV) < 0 {
+		inside = true
+		normalV = normalV.Negate()
+	}
+	return Comps{
+		T: i.T, Object: i.Object, Point: point, EyeV: eyeV, NormalV: normalV, Inside: inside,
+	}
+}
+
+// ShadeHit returns the colour for a computed intersection.
+func ShadeHit(world World, comps Comps) colour.Colour {
+	var lightColour colour.Colour
+	c := colour.New(0, 0, 0)
+	for i := 0; i < len(world.Lights); i++ {
+		lightColour = ray.Lighting(
+			comps.Object.Material(), world.Lights[i], comps.Point, comps.EyeV, comps.NormalV,
+		)
+		c = c.Add(lightColour)
+	}
+	return c
+}
+
+// ColourAt returns the colour for a given ray in a given world.
+func ColourAt(w World, r ray.Ray) colour.Colour {
+	intersections := IntersectWorld(w, r)
+	hit, err := intersections.Hit()
+	if err != nil {
+		return colour.New(0, 0, 0)
+	}
+	comps := PrepareComputations(hit, r)
+	return ShadeHit(w, comps)
 }

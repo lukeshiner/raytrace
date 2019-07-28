@@ -49,7 +49,7 @@ func TestSetTransform(t *testing.T) {
 
 func TestNormalAt(t *testing.T) {
 	var tests = []struct {
-		sphere    Sphere
+		sphere    *Sphere
 		transform matrix.Matrix
 		point     vector.Vector
 		expected  vector.Vector
@@ -109,5 +109,19 @@ func TestNormalAt(t *testing.T) {
 				test.sphere, test.point,
 			)
 		}
+	}
+}
+
+func TestGetID(t *testing.T) {
+	expected := 0
+	nextID = expected
+	s := NewSphere()
+	if s.ID() != expected {
+		t.Errorf("First ID was %d, expected %d.", s.ID(), expected)
+	}
+	s = NewSphere()
+	expected++
+	if s.ID() != expected {
+		t.Errorf("Second ID was %d, expected %d.", s.ID(), expected)
 	}
 }

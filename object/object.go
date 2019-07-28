@@ -1,8 +1,6 @@
 package object
 
 import (
-	"math/rand"
-
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/vector"
@@ -10,22 +8,23 @@ import (
 
 // Object is an interface for objects
 type Object interface {
-	ID() string
+	ID() int
 	Material() material.Material
 	SetMaterial(m material.Material)
 	Transform() matrix.Matrix
 	SetTransform(m matrix.Matrix)
+	NormalAt(p vector.Vector) vector.Vector
 }
 
 // Sphere is the struct for spheres
 type Sphere struct {
-	id        string
+	id        int
 	material  material.Material
 	transform matrix.Matrix
 }
 
 // ID returns the ID of the object
-func (s Sphere) ID() string {
+func (s Sphere) ID() int {
 	return s.id
 }
 
@@ -60,18 +59,16 @@ func (s *Sphere) NormalAt(p vector.Vector) vector.Vector {
 }
 
 // NewSphere returns a unit sphere at the origin
-func NewSphere() Sphere {
-	return Sphere{
-		id: generateID(), material: material.New(), transform: matrix.IdentityMatrix(4),
+func NewSphere() *Sphere {
+	return &Sphere{
+		id: getID(), material: material.New(), transform: matrix.IdentityMatrix(4),
 	}
 }
 
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+var nextID = 0
 
-func generateID() string {
-	b := make([]rune, 100)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
+func getID() int {
+	id := nextID
+	nextID++
+	return id
 }

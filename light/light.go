@@ -40,6 +40,6 @@ func (p *Point) SetPosition(pos vector.Vector) {
 }
 
 // NewPoint creates a new point light
-func NewPoint(intensity colour.Colour, position vector.Vector) Point {
-	return Point{intensity: intensity, position: position}
+func NewPoint(intensity colour.Colour, position vector.Vector) *Point {
+	return &Point{intensity: intensity, position: position}
 }

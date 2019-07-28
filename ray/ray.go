@@ -135,7 +135,7 @@ func Intersect(o object.Object, ray Ray) Intersections {
 }
 
 // Lighting calculates the lighting on a surface
-func Lighting(m material.Material, l light.Point, p, e, n vector.Vector) colour.Colour {
+func Lighting(m material.Material, l light.Light, p, e, n vector.Vector) colour.Colour {
 	var diffuse, specular colour.Colour
 	effectiveColour := m.Colour.Mult(l.Intensity())
 	lightVector := vector.Subtract(l.Position(), p)

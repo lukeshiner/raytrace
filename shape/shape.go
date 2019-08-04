@@ -3,6 +3,7 @@ package shape
 import (
 	"math"
 
+	"github.com/lukeshiner/raytrace/comparison"
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/ray"
@@ -118,6 +119,30 @@ func (s Sphere) LocalNormalAt(p vector.Vector) vector.Vector {
 // NewSphere returns a unit sphere at the origin
 func NewSphere() Shape {
 	return &Sphere{newShape()}
+}
+
+// Plane is the type for plane shapes.
+type Plane struct {
+	shape
+}
+
+// LocalNormalAt returns the normal vector of the plane at the given point in local space.
+func (s Plane) LocalNormalAt(p vector.Vector) vector.Vector {
+	return vector.NewVector(0, 1, 0)
+}
+
+// LocalIntersect returns a list of intersectioins between ray and the shape in local space.
+func (s Plane) LocalIntersect(r ray.Ray) Intersections {
+	if math.Abs(r.Direction.Y) < comparison.EPSLION {
+		return Intersections{}
+	}
+	t := -r.Origin.Y / r.Direction.Y
+	return NewIntersections(NewIntersection(t, &s))
+}
+
+// NewPlane returns a new Plane shape.
+func NewPlane() Shape {
+	return &Plane{newShape()}
 }
 
 // Intersect returns a list of intersectioins between ray and the shape.

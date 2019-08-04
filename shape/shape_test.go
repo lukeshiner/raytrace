@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/lukeshiner/raytrace/colour"
+	"github.com/lukeshiner/raytrace/comparison"
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
 	"github.com/lukeshiner/raytrace/ray"
@@ -189,5 +190,80 @@ func TestGetID(t *testing.T) {
 	expected++
 	if s.ID() != expected {
 		t.Errorf("Second ID was %d, expected %d.", s.ID(), expected)
+	}
+}
+
+func TestPlaneNormalAt(t *testing.T) {
+	var tests = []struct {
+		plane           Shape
+		point, expected vector.Vector
+	}{
+		{
+			plane:    NewPlane(),
+			point:    vector.NewPoint(0, 0, 0),
+			expected: vector.NewVector(0, 1, 0),
+		},
+		{
+			plane:    NewPlane(),
+			point:    vector.NewPoint(10, 0, -10),
+			expected: vector.NewVector(0, 1, 0),
+		},
+		{
+			plane:    NewPlane(),
+			point:    vector.NewPoint(-5, 0, 150),
+			expected: vector.NewVector(0, 1, 0),
+		},
+	}
+	for _, test := range tests {
+		result := test.plane.LocalNormalAt(test.point)
+		if !vector.Equal(result, test.expected) {
+			t.Errorf(
+				"Plane local normal at %v was %v, expected %v.",
+				test.point, result, test.expected,
+			)
+		}
+	}
+}
+
+func TestPlaneLocalIntersect(t *testing.T) {
+	var tests = []struct {
+		plane    Shape
+		ray      ray.Ray
+		expected []float64
+	}{
+		{
+			// Intersect with a ray parallel to the plane.
+			plane:    NewPlane(),
+			ray:      ray.New(vector.NewPoint(0, 10, 0), vector.NewVector(0, 0, 1)),
+			expected: []float64{},
+		},
+		{
+			// Intersect with a coplanar ray.
+			plane:    NewPlane(),
+			ray:      ray.New(vector.NewPoint(0, 0, 0), vector.NewVector(0, 0, 1)),
+			expected: []float64{},
+		},
+		{
+			// A ray intersecting a plane from above.
+			plane:    NewPlane(),
+			ray:      ray.New(vector.NewPoint(0, 1, 0), vector.NewVector(0, -1, 0)),
+			expected: []float64{1},
+		},
+		{
+			// A ray intersecting a plane from below.
+			plane:    NewPlane(),
+			ray:      ray.New(vector.NewPoint(0, -1, 0), vector.NewVector(0, 1, 0)),
+			expected: []float64{1},
+		},
+	}
+	for _, test := range tests {
+		intersections := test.plane.LocalIntersect(test.ray)
+		result := intersections.TSlice()
+		if !comparison.EqualSlice(result, test.expected) {
+			t.Errorf(
+				"Intersection of plane and ray (%v) was %v, expected %v",
+				test.ray, result, test.expected,
+			)
+		}
 	}
 }

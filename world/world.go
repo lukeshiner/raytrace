@@ -6,14 +6,14 @@ import (
 	"github.com/lukeshiner/raytrace/light"
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
-	"github.com/lukeshiner/raytrace/object"
 	"github.com/lukeshiner/raytrace/ray"
+	"github.com/lukeshiner/raytrace/shape"
 	"github.com/lukeshiner/raytrace/vector"
 )
 
 // World holds world data.
 type World struct {
-	Objects []object.Object
+	Objects []shape.Shape
 	Lights  []light.Light
 }
 
@@ -25,16 +25,16 @@ func New() World {
 // Default returns a default world with a light at two spheres.
 func Default() World {
 	w := New()
-	s1 := object.NewSphere()
+	s1 := shape.NewSphere()
 	m := material.New()
 	m.Colour = colour.New(0.8, 1.0, 0.6)
 	m.Diffuse = 0.7
 	m.Specular = 0.2
 	s1.SetMaterial(m)
-	s2 := object.NewSphere()
+	s2 := shape.NewSphere()
 	s2.SetTransform(matrix.ScalingMatrix(0.5, 0.5, 0.5))
 	l := light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(-10, 10, -10))
-	w.Objects = []object.Object{s1, s2}
+	w.Objects = []shape.Shape{s1, s2}
 	w.Lights = []light.Light{l}
 	return w
 }
@@ -51,7 +51,7 @@ func IntersectWorld(w World, r ray.Ray) ray.Intersections {
 // Comps holds computations for ray intersections.
 type Comps struct {
 	T                               float64
-	Object                          object.Object
+	Object                          shape.Shape
 	Point, EyeV, NormalV, OverPoint vector.Vector
 	Inside                          bool
 }

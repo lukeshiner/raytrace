@@ -8,8 +8,8 @@ import (
 	"github.com/lukeshiner/raytrace/light"
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
-	"github.com/lukeshiner/raytrace/object"
 	"github.com/lukeshiner/raytrace/ray"
+	"github.com/lukeshiner/raytrace/shape"
 	"github.com/lukeshiner/raytrace/vector"
 )
 
@@ -41,21 +41,21 @@ func TestDefaultWorld(t *testing.T) {
 		t.Errorf("Default world created with %d objects, expected 2.", len(w.Objects))
 	}
 	switch w.Objects[0].(type) {
-	case *object.Sphere:
+	case *shape.Sphere:
 		break
 	default:
-		t.Error("Default world first object was not object.Sphere.")
+		t.Error("Default world first object was not shape.Sphere.")
 	}
 	m := w.Objects[0].Material()
 	if m.Colour.Equal(colour.New(0.8, 1.0, 0.6)) != true ||
 		m.Diffuse != 0.7 || m.Specular != 0.2 {
 		t.Errorf("Default world first object has incorrect material: %+v.", m)
 	}
-	switch w.Objects[1].(type) {
-	case *object.Sphere:
+	switch w.Objects[0].(type) {
+	case *shape.Sphere:
 		break
 	default:
-		t.Error("Default world second object was not object.Sphere.")
+		t.Error("Default world second object was not shape.Sphere.")
 	}
 	if matrix.Equal(w.Objects[1].Transform(), matrix.ScalingMatrix(0.5, 0.5, 0.5)) != true {
 		t.Error("Default world second object not transformed correctly.")
@@ -89,7 +89,7 @@ func TestPrepareComputations(t *testing.T) {
 		{
 			// The hit, when an intersection occurs on the outside.
 			ray:             ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1)),
-			intersection:    ray.NewIntersection(4, object.NewSphere()),
+			intersection:    ray.NewIntersection(4, shape.NewSphere()),
 			expectedPoint:   vector.NewPoint(0, 0, -1),
 			expectedEyeV:    vector.NewVector(0, 0, -1),
 			expectedNormalV: vector.NewVector(0, 0, -1),
@@ -98,7 +98,7 @@ func TestPrepareComputations(t *testing.T) {
 		{
 			// The hit, when an intersection occurs on the inside.
 			ray:             ray.New(vector.NewPoint(0, 0, 0), vector.NewVector(0, 0, 1)),
-			intersection:    ray.NewIntersection(1, object.NewSphere()),
+			intersection:    ray.NewIntersection(1, shape.NewSphere()),
 			expectedPoint:   vector.NewPoint(0, 0, 1),
 			expectedEyeV:    vector.NewVector(0, 0, -1),
 			expectedNormalV: vector.NewVector(0, 0, -1),
@@ -172,7 +172,7 @@ func TestShadeHit(t *testing.T) {
 func TestShadeHitWithShadow(t *testing.T) {
 	w := Default()
 	w.Lights = []light.Light{light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, -10))}
-	w.Objects = []object.Object{object.NewSphere(), object.NewSphere()}
+	w.Objects = []shape.Shape{shape.NewSphere(), shape.NewSphere()}
 	w.Objects[1].SetTransform(matrix.TranslationMatrix(0, 0, 10))
 	r := ray.New(vector.NewPoint(0, 0, 5), vector.NewVector(0, 0, 1))
 	i := ray.Intersect(w.Objects[1], r).Intersections[0]
@@ -268,7 +268,7 @@ func TestInShadow(t *testing.T) {
 
 func TestOverPoint(t *testing.T) {
 	r := ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1))
-	s := object.NewSphere()
+	s := shape.NewSphere()
 	s.SetTransform(matrix.TranslationMatrix(0, 0, 1))
 	i := ray.NewIntersection(5, s)
 	comps := PrepareComputations(i, r)

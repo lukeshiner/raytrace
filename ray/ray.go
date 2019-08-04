@@ -9,7 +9,7 @@ import (
 	"github.com/lukeshiner/raytrace/light"
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
-	"github.com/lukeshiner/raytrace/object"
+	"github.com/lukeshiner/raytrace/shape"
 	"github.com/lukeshiner/raytrace/vector"
 )
 
@@ -41,7 +41,7 @@ func Reflect(in, normal vector.Vector) vector.Vector {
 // Intersection holds an intersection.
 type Intersection struct {
 	T      float64
-	Object object.Object
+	Object shape.Shape
 }
 
 // Intersections holds a slice of Intersection.
@@ -87,7 +87,7 @@ func (i *Intersections) Hit() (Intersection, error) {
 }
 
 // NewIntersection returns an Intersection instance.
-func NewIntersection(t float64, obj object.Object) Intersection {
+func NewIntersection(t float64, obj shape.Shape) Intersection {
 	return Intersection{T: t, Object: obj}
 }
 
@@ -115,8 +115,8 @@ func New(origin, direction vector.Vector) Ray {
 	return Ray{Origin: origin, Direction: direction}
 }
 
-// Intersect returns a list of intersectioins between ray and an object.
-func Intersect(o object.Object, ray Ray) Intersections {
+// Intersect returns a list of intersectioins between ray and an shape.
+func Intersect(o shape.Shape, ray Ray) Intersections {
 	transform, _ := o.Transform().Invert()
 	tRay := ray.Transform(transform)
 	sphereToRay := vector.Subtract(tRay.Origin, vector.NewPoint(0, 0, 0))

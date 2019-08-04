@@ -1,4 +1,4 @@
-package object
+package shape
 
 import (
 	"github.com/lukeshiner/raytrace/material"
@@ -6,8 +6,8 @@ import (
 	"github.com/lukeshiner/raytrace/vector"
 )
 
-// Object is an interface for objects
-type Object interface {
+// Shape is an interface for objects
+type Shape interface {
 	ID() int
 	Material() material.Material
 	SetMaterial(m material.Material)
@@ -17,39 +17,39 @@ type Object interface {
 }
 
 // Sphere is the struct for spheres
-type Sphere struct {
+type shape struct {
 	id        int
 	material  material.Material
 	transform matrix.Matrix
 }
 
 // ID returns the ID of the object
-func (s Sphere) ID() int {
+func (s shape) ID() int {
 	return s.id
 }
 
 // Material returns the material of the sphere
-func (s Sphere) Material() material.Material {
+func (s shape) Material() material.Material {
 	return s.material
 }
 
 // SetMaterial sets a sphere's material.
-func (s *Sphere) SetMaterial(m material.Material) {
+func (s *shape) SetMaterial(m material.Material) {
 	s.material = m
 }
 
 // Transform returns the sphere's transform matrix.
-func (s Sphere) Transform() matrix.Matrix {
+func (s shape) Transform() matrix.Matrix {
 	return s.transform
 }
 
 // SetTransform sets the transform matrix for a sphere.
-func (s *Sphere) SetTransform(m matrix.Matrix) {
+func (s *shape) SetTransform(m matrix.Matrix) {
 	s.transform = m
 }
 
 // NormalAt returns the normal vector of the sphere at the given point.
-func (s *Sphere) NormalAt(p vector.Vector) vector.Vector {
+func (s *shape) NormalAt(p vector.Vector) vector.Vector {
 	transform, _ := s.Transform().Invert()
 	objectPoint := vector.MultiplyMatrixByVector(transform, p)
 	normal := vector.Subtract(objectPoint, vector.NewPoint(0, 0, 0))
@@ -58,17 +58,33 @@ func (s *Sphere) NormalAt(p vector.Vector) vector.Vector {
 	return worldNormal.Normalize()
 }
 
-// NewSphere returns a unit sphere at the origin
-func NewSphere() *Sphere {
-	return &Sphere{
+func newShape() shape {
+	return shape{
 		id: getID(), material: material.New(), transform: matrix.IdentityMatrix(4),
 	}
+}
+
+type testShape struct {
+	shape
+}
+
+func newTestShape() Shape {
+	return &testShape{newShape()}
+}
+
+// Sphere is the type for spheres.
+type Sphere struct {
+	shape
+}
+
+// NewSphere returns a unit sphere at the origin
+func NewSphere() Shape {
+	return &Sphere{newShape()}
 }
 
 var nextID = 0
 
 func getID() int {
-	id := nextID
 	nextID++
-	return id
+	return nextID - 1
 }

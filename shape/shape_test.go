@@ -1,4 +1,4 @@
-package object
+package shape
 
 import (
 	"math"
@@ -10,46 +10,46 @@ import (
 	"github.com/lukeshiner/raytrace/vector"
 )
 
-func TestDefaultSphereTransform(t *testing.T) {
-	s := NewSphere()
+func newTestShapeDefaultTransform(t *testing.T) {
+	s := newTestShape()
 	if matrix.Equal(s.Transform(), matrix.IdentityMatrix(4)) != true {
 		t.Error("Sphere default transform was not the identity matrix.")
 	}
 }
 
-func TestDefaultSphereMaterial(t *testing.T) {
-	s := NewSphere()
+func newTestShapeDefaultMaterial(t *testing.T) {
+	s := newTestShape()
 	if s.Material() != material.New() {
 		t.Error("Sphere default material was not correct.")
 	}
 }
 
-func TestSetMaterial(t *testing.T) {
+func newTestShapeSetMaterial(t *testing.T) {
 	m := material.New()
 	m.Colour = colour.New(0.5, 0.5, 0.5)
 	m.Ambient = 0.5
 	m.Diffuse = 0.3
 	m.Specular = 0.8
 	m.Shininess = 150.0
-	s := NewSphere()
+	s := newTestShape()
 	s.SetMaterial(m)
 	if s.Material() != m {
 		t.Error("Could not set Sphere material.")
 	}
 }
 
-func TestSetTransform(t *testing.T) {
-	s := NewSphere()
+func newTestShapeSetTransform(t *testing.T) {
+	s := newTestShape()
 	transform := matrix.TranslationMatrix(2, 3, 4)
 	s.SetTransform(transform)
-	if matrix.Equal(s.transform, transform) != true {
+	if matrix.Equal(s.Transform(), transform) != true {
 		t.Error("Did not set transform on sphere.")
 	}
 }
 
 func TestNormalAt(t *testing.T) {
 	var tests = []struct {
-		sphere    *Sphere
+		sphere    Shape
 		transform matrix.Matrix
 		point     vector.Vector
 		expected  vector.Vector
@@ -115,11 +115,16 @@ func TestNormalAt(t *testing.T) {
 func TestGetID(t *testing.T) {
 	expected := 0
 	nextID = expected
-	s := NewSphere()
+	s := newTestShape()
 	if s.ID() != expected {
 		t.Errorf("First ID was %d, expected %d.", s.ID(), expected)
 	}
-	s = NewSphere()
+	s = newTestShape()
+	expected++
+	if s.ID() != expected {
+		t.Errorf("Second ID was %d, expected %d.", s.ID(), expected)
+	}
+	s = newTestShape()
 	expected++
 	if s.ID() != expected {
 		t.Errorf("Second ID was %d, expected %d.", s.ID(), expected)

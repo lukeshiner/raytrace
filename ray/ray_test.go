@@ -9,7 +9,7 @@ import (
 	"github.com/lukeshiner/raytrace/light"
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
-	"github.com/lukeshiner/raytrace/object"
+	"github.com/lukeshiner/raytrace/shape"
 	"github.com/lukeshiner/raytrace/vector"
 )
 
@@ -74,32 +74,32 @@ func TestPosition(t *testing.T) {
 func TestIntersect(t *testing.T) {
 	var tests = []struct {
 		ray      Ray
-		object   object.Object
+		object   shape.Shape
 		expected []float64
 	}{
 		{
 			ray:      New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1)),
-			object:   object.NewSphere(),
+			object:   shape.NewSphere(),
 			expected: []float64{4.0, 6.0},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 1, -5), vector.NewVector(0, 0, 1)),
-			object:   object.NewSphere(),
+			object:   shape.NewSphere(),
 			expected: []float64{5.0, 5.0},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 2, -5), vector.NewVector(0, 0, 1)),
-			object:   object.NewSphere(),
+			object:   shape.NewSphere(),
 			expected: []float64{},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 0, 0), vector.NewVector(0, 0, 1)),
-			object:   object.NewSphere(),
+			object:   shape.NewSphere(),
 			expected: []float64{-1.0, 1.0},
 		},
 		{
 			ray:      New(vector.NewPoint(0, 0, 5), vector.NewVector(0, 0, 1)),
-			object:   object.NewSphere(),
+			object:   shape.NewSphere(),
 			expected: []float64{-6.0, -4.0},
 		},
 	}
@@ -118,11 +118,11 @@ func TestIntersect(t *testing.T) {
 func TestIntersection(t *testing.T) {
 	var tests = []struct {
 		t float64
-		o object.Object
+		o shape.Shape
 	}{
 		{
 			t: 3.5,
-			o: object.NewSphere(),
+			o: shape.NewSphere(),
 		},
 	}
 	for _, test := range tests {
@@ -134,21 +134,21 @@ func TestIntersection(t *testing.T) {
 }
 
 func TestIntersections(t *testing.T) {
-	s := object.NewSphere()
+	s := shape.NewSphere()
 	i1 := NewIntersection(1, s)
 	i2 := NewIntersection(2, s)
 	xs := NewIntersections(i1, i2)
 	if xs.Count() != 2 || xs.Get(0).T != 1 || xs.Get(1).T != 2 {
-		t.Error("Intersect did not set object.")
+		t.Error("Intersect did not set shape.")
 	}
 }
 
 func TestIntersectionsSetsObject(t *testing.T) {
 	ray := New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1))
-	sphere := object.NewSphere()
+	sphere := shape.NewSphere()
 	xs := Intersect(sphere, ray)
 	if xs.Get(0).Object.ID() != sphere.ID() || xs.Get(1).Object.ID() != sphere.ID() {
-		t.Error("Intersect did not set object.")
+		t.Error("Intersect did not set shape.")
 	}
 }
 
@@ -160,33 +160,33 @@ func TestHit(t *testing.T) {
 	}{
 		{
 			intersections: NewIntersections(
-				NewIntersection(1, object.NewSphere()),
-				NewIntersection(2, object.NewSphere()),
+				NewIntersection(1, shape.NewSphere()),
+				NewIntersection(2, shape.NewSphere()),
 			),
 			expectNil: false,
 			expected:  1,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(-1, object.NewSphere()),
-				NewIntersection(1, object.NewSphere()),
+				NewIntersection(-1, shape.NewSphere()),
+				NewIntersection(1, shape.NewSphere()),
 			),
 			expectNil: false,
 			expected:  1,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(-2, object.NewSphere()),
-				NewIntersection(-1, object.NewSphere()),
+				NewIntersection(-2, shape.NewSphere()),
+				NewIntersection(-1, shape.NewSphere()),
 			),
 			expectNil: true,
 		},
 		{
 			intersections: NewIntersections(
-				NewIntersection(5, object.NewSphere()),
-				NewIntersection(7, object.NewSphere()),
-				NewIntersection(-3, object.NewSphere()),
-				NewIntersection(2, object.NewSphere()),
+				NewIntersection(5, shape.NewSphere()),
+				NewIntersection(7, shape.NewSphere()),
+				NewIntersection(-3, shape.NewSphere()),
+				NewIntersection(2, shape.NewSphere()),
 			),
 			expectNil: false,
 			expected:  2,
@@ -257,7 +257,7 @@ func TestIntersectionWithTransformedSphere(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		s := object.NewSphere()
+		s := shape.NewSphere()
 		s.SetTransform(test.transform)
 		xs := Intersect(s, test.ray)
 		if comparison.EqualSlice(xs.TSlice(), test.expected) != true {
@@ -389,8 +389,8 @@ func TestLighting(t *testing.T) {
 }
 
 func TestAddIntersections(t *testing.T) {
-	o1 := object.NewSphere()
-	o2 := object.NewSphere()
+	o1 := shape.NewSphere()
+	o2 := shape.NewSphere()
 	i1 := NewIntersections(NewIntersection(9.8, o1), NewIntersection(5.6, o1))
 	i2 := NewIntersections(NewIntersection(2.4, o2), NewIntersection(10.5, o2))
 	ins := CombineIntersections(i1, i2)

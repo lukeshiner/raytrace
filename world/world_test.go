@@ -169,6 +169,21 @@ func TestShadeHit(t *testing.T) {
 	}
 }
 
+func TestShadeHitWithShadow(t *testing.T) {
+	w := Default()
+	w.Lights = []light.Light{light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, -10))}
+	w.Objects = []object.Object{object.NewSphere(), object.NewSphere()}
+	w.Objects[1].SetTransform(matrix.TranslationMatrix(0, 0, 10))
+	r := ray.New(vector.NewPoint(0, 0, 5), vector.NewVector(0, 0, 1))
+	i := ray.Intersect(w.Objects[1], r).Intersections[0]
+	comps := PrepareComputations(i, r)
+	expected := colour.New(0.1, 0.1, 0.1)
+	result := ShadeHit(w, comps)
+	if !result.Equal(expected) {
+		t.Errorf("ShaderHit with shadow returned %v, expected %v.", result, expected)
+	}
+}
+
 func TestColourAt(t *testing.T) {
 	var tests = []struct {
 		ray      ray.Ray
@@ -207,5 +222,61 @@ func TestColourAtWithIntersectionBehindRay(t *testing.T) {
 	result := ColourAt(w, r)
 	if result.Equal(expected) != true {
 		t.Errorf("ColourAt returned %v, expected %v.", result, expected)
+	}
+}
+
+func TestInShadow(t *testing.T) {
+	var tests = []struct {
+		world    World
+		point    vector.Vector
+		expected bool
+	}{
+		{
+			// There is no shadow when nothing is collinear with point and light.
+			world:    Default(),
+			point:    vector.NewPoint(0, 10, 0),
+			expected: false,
+		},
+		{
+			// The shadow when an object is between the point and the light.
+			world:    Default(),
+			point:    vector.NewPoint(10, -10, 10),
+			expected: true,
+		},
+		{
+			// The shadow when an object is behind the light.
+			world:    Default(),
+			point:    vector.NewPoint(-20, 20, -20),
+			expected: false,
+		},
+		{
+			// The shadow when an object is behind the light.
+			world:    Default(),
+			point:    vector.NewPoint(-2, 2, -2),
+			expected: false,
+		},
+	}
+	for _, test := range tests {
+		result := IsShadowed(test.world, test.point, test.world.Lights[0])
+		if result != test.expected {
+			t.Errorf(
+				"InShadow for point %v was %v, expected %v.", test.point, result, test.expected,
+			)
+		}
+	}
+}
+
+func TestOverPoint(t *testing.T) {
+	r := ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1))
+	s := object.NewSphere()
+	s.SetTransform(matrix.TranslationMatrix(0, 0, 1))
+	i := ray.NewIntersection(5, s)
+	comps := PrepareComputations(i, r)
+	result := comps.OverPoint.Z
+	if result >= -comparison.EPSLION/2 {
+		t.Errorf("Over Point %v too low.", result)
+	}
+	if result > comps.Point.Z {
+		t.Errorf("Over Point %v too high.", result)
 	}
 }

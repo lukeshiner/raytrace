@@ -135,14 +135,16 @@ func Intersect(o object.Object, ray Ray) Intersections {
 }
 
 // Lighting calculates the lighting on a surface
-func Lighting(m material.Material, l light.Light, p, e, n vector.Vector) colour.Colour {
+func Lighting(
+	m material.Material, l light.Light, p, e, n vector.Vector, inShadow bool,
+) colour.Colour {
 	var diffuse, specular colour.Colour
 	effectiveColour := m.Colour.Mult(l.Intensity())
 	lightVector := vector.Subtract(l.Position(), p)
 	lightVector = lightVector.Normalize()
 	ambient := effectiveColour.ScalarMult(m.Ambient)
 	lightDotNormal := vector.DotProduct(lightVector, n)
-	if lightDotNormal < 0 {
+	if inShadow || lightDotNormal < 0 {
 		// Light behind surface
 		diffuse = colour.New(0, 0, 0)
 		specular = colour.New(0, 0, 0)

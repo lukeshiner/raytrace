@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/lukeshiner/raytrace/colour"
+	"github.com/lukeshiner/raytrace/comparison"
 	"github.com/lukeshiner/raytrace/light"
 	"github.com/lukeshiner/raytrace/material"
 	"github.com/lukeshiner/raytrace/matrix"
@@ -49,10 +50,10 @@ func IntersectWorld(w World, r ray.Ray) ray.Intersections {
 
 // Comps holds computations for ray intersections.
 type Comps struct {
-	T                    float64
-	Object               object.Object
-	Point, EyeV, NormalV vector.Vector
-	Inside               bool
+	T                               float64
+	Object                          object.Object
+	Point, EyeV, NormalV, OverPoint vector.Vector
+	Inside                          bool
 }
 
 // PrepareComputations returns a Comps for an intersection and a ray.
@@ -65,18 +66,23 @@ func PrepareComputations(i ray.Intersection, r ray.Ray) Comps {
 		inside = true
 		normalV = normalV.Negate()
 	}
+	overPoint := vector.Add(point, normalV.ScalarMultiply(comparison.EPSLION))
 	return Comps{
 		T: i.T, Object: i.Object, Point: point, EyeV: eyeV, NormalV: normalV, Inside: inside,
+		OverPoint: overPoint,
 	}
 }
 
 // ShadeHit returns the colour for a computed intersection.
 func ShadeHit(world World, comps Comps) colour.Colour {
 	var lightColour colour.Colour
+	var shadowed bool
 	c := colour.New(0, 0, 0)
 	for i := 0; i < len(world.Lights); i++ {
+		shadowed = IsShadowed(world, comps.OverPoint, world.Lights[i])
 		lightColour = ray.Lighting(
 			comps.Object.Material(), world.Lights[i], comps.Point, comps.EyeV, comps.NormalV,
+			shadowed,
 		)
 		c = c.Add(lightColour)
 	}
@@ -92,4 +98,20 @@ func ColourAt(w World, r ray.Ray) colour.Colour {
 	}
 	comps := PrepareComputations(hit, r)
 	return ShadeHit(w, comps)
+}
+
+// IsShadowed returns true if a point in the world is shadowed from light.
+func IsShadowed(w World, p vector.Vector, l light.Light) bool {
+	v := vector.Subtract(l.Position(), p)
+	distance := v.Magnitude()
+	direction := v.Normalize()
+
+	r := ray.New(p, direction)
+	intersections := IntersectWorld(w, r)
+
+	h, err := intersections.Hit()
+	if err == nil && h.T < distance {
+		return true
+	}
+	return false
 }

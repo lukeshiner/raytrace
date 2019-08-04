@@ -300,6 +300,7 @@ func TestLighting(t *testing.T) {
 		material              material.Material
 		light                 light.Light
 		position, eye, normal vector.Vector
+		inShadow              bool
 		expected              colour.Colour
 	}{
 		{
@@ -309,6 +310,7 @@ func TestLighting(t *testing.T) {
 			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, -10)),
 			normal:   vector.NewVector(0, 0, -1),
 			eye:      vector.NewVector(0, 0, -1),
+			inShadow: false,
 			expected: colour.New(1.9, 1.9, 1.9),
 		},
 		{
@@ -318,6 +320,7 @@ func TestLighting(t *testing.T) {
 			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, -10)),
 			normal:   vector.NewVector(0, 0, -1),
 			eye:      vector.NewVector(0, math.Sqrt(2)/2, -math.Sqrt(2)/2),
+			inShadow: false,
 			expected: colour.New(1.0, 1.0, 1.0),
 		},
 		{
@@ -327,6 +330,7 @@ func TestLighting(t *testing.T) {
 			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 10, -10)),
 			normal:   vector.NewVector(0, 0, -1),
 			eye:      vector.NewVector(0, 0, -1),
+			inShadow: false,
 			expected: colour.New(0.7364, 0.7364, 0.7364),
 		},
 		{
@@ -336,6 +340,7 @@ func TestLighting(t *testing.T) {
 			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 10, -10)),
 			normal:   vector.NewVector(0, 0, -1),
 			eye:      vector.NewVector(0, -math.Sqrt(2)/2, -math.Sqrt(2)/2),
+			inShadow: false,
 			expected: colour.New(1.6364, 1.6364, 1.6364),
 		},
 		{
@@ -345,6 +350,7 @@ func TestLighting(t *testing.T) {
 			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, 10)),
 			normal:   vector.NewVector(0, 0, -1),
 			eye:      vector.NewVector(0, 0, -1),
+			inShadow: false,
 			expected: colour.New(0.1, 0.1, 0.1),
 		},
 		{
@@ -354,11 +360,23 @@ func TestLighting(t *testing.T) {
 			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, 10)),
 			normal:   vector.NewVector(0, 0, -1),
 			eye:      vector.NewVector(0, 0, -1),
+			inShadow: false,
+			expected: colour.New(0.1, 0.1, 0.1),
+		},
+		{
+			// Lighting with the surface in shadow.
+			material: material.New(),
+			position: vector.NewPoint(0, 0, 0),
+			light:    light.NewPoint(colour.New(1, 1, 1), vector.NewPoint(0, 0, -10)),
+			normal:   vector.NewVector(0, 0, -1),
+			eye:      vector.NewVector(0, 0, -1),
+			inShadow: true,
 			expected: colour.New(0.1, 0.1, 0.1),
 		},
 	}
 	for _, test := range tests {
-		result := Lighting(test.material, test.light, test.position, test.eye, test.normal)
+		result := Lighting(
+			test.material, test.light, test.position, test.eye, test.normal, test.inShadow)
 		if result.Equal(test.expected) != true {
 			t.Errorf(
 				"Lighting with material %+v, light %+v, position %+v, eye %+v and normal %+v "+

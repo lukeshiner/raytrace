@@ -40,12 +40,12 @@ func Default() World {
 }
 
 // IntersectWorld returns the intersections of a ray with objects in the world.
-func IntersectWorld(w World, r ray.Ray) ray.Intersections {
-	var intersections = []ray.Intersections{}
+func IntersectWorld(w World, r ray.Ray) shape.Intersections {
+	var intersections = []shape.Intersections{}
 	for i := 0; i < len(w.Objects); i++ {
-		intersections = append(intersections, ray.Intersect(w.Objects[i], r))
+		intersections = append(intersections, shape.Intersect(w.Objects[i], r))
 	}
-	return ray.CombineIntersections(intersections...)
+	return shape.CombineIntersections(intersections...)
 }
 
 // Comps holds computations for ray intersections.
@@ -57,11 +57,11 @@ type Comps struct {
 }
 
 // PrepareComputations returns a Comps for an intersection and a ray.
-func PrepareComputations(i ray.Intersection, r ray.Ray) Comps {
+func PrepareComputations(i shape.Intersection, r ray.Ray) Comps {
 	inside := false
 	point := r.Position(i.T)
 	eyeV := r.Direction.Negate()
-	normalV := i.Object.NormalAt(point)
+	normalV := shape.NormalAt(i.Object, point)
 	if vector.DotProduct(normalV, eyeV) < 0 {
 		inside = true
 		normalV = normalV.Negate()
@@ -80,7 +80,7 @@ func ShadeHit(world World, comps Comps) colour.Colour {
 	c := colour.New(0, 0, 0)
 	for i := 0; i < len(world.Lights); i++ {
 		shadowed = IsShadowed(world, comps.OverPoint, world.Lights[i])
-		lightColour = ray.Lighting(
+		lightColour = shape.Lighting(
 			comps.Object.Material(), world.Lights[i], comps.Point, comps.EyeV, comps.NormalV,
 			shadowed,
 		)

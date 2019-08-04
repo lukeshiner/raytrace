@@ -82,14 +82,14 @@ func TestIntersectWorld(t *testing.T) {
 func TestPrepareComputations(t *testing.T) {
 	var tests = []struct {
 		ray                                          ray.Ray
-		intersection                                 ray.Intersection
+		intersection                                 shape.Intersection
 		expectedPoint, expectedEyeV, expectedNormalV vector.Vector
 		expectedInside                               bool
 	}{
 		{
 			// The hit, when an intersection occurs on the outside.
 			ray:             ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1)),
-			intersection:    ray.NewIntersection(4, shape.NewSphere()),
+			intersection:    shape.NewIntersection(4, shape.NewSphere()),
 			expectedPoint:   vector.NewPoint(0, 0, -1),
 			expectedEyeV:    vector.NewVector(0, 0, -1),
 			expectedNormalV: vector.NewVector(0, 0, -1),
@@ -98,7 +98,7 @@ func TestPrepareComputations(t *testing.T) {
 		{
 			// The hit, when an intersection occurs on the inside.
 			ray:             ray.New(vector.NewPoint(0, 0, 0), vector.NewVector(0, 0, 1)),
-			intersection:    ray.NewIntersection(1, shape.NewSphere()),
+			intersection:    shape.NewIntersection(1, shape.NewSphere()),
 			expectedPoint:   vector.NewPoint(0, 0, 1),
 			expectedEyeV:    vector.NewVector(0, 0, -1),
 			expectedNormalV: vector.NewVector(0, 0, -1),
@@ -160,7 +160,7 @@ func TestShadeHit(t *testing.T) {
 		if test.light != nil {
 			test.world.Lights[0] = test.light
 		}
-		i := ray.NewIntersection(test.t, test.world.Objects[test.objectIndex])
+		i := shape.NewIntersection(test.t, test.world.Objects[test.objectIndex])
 		comps := PrepareComputations(i, test.ray)
 		result := ShadeHit(test.world, comps)
 		if result.Equal(test.expected) != true {
@@ -175,7 +175,7 @@ func TestShadeHitWithShadow(t *testing.T) {
 	w.Objects = []shape.Shape{shape.NewSphere(), shape.NewSphere()}
 	w.Objects[1].SetTransform(matrix.TranslationMatrix(0, 0, 10))
 	r := ray.New(vector.NewPoint(0, 0, 5), vector.NewVector(0, 0, 1))
-	i := ray.Intersect(w.Objects[1], r).Intersections[0]
+	i := shape.Intersect(w.Objects[1], r).Intersections[0]
 	comps := PrepareComputations(i, r)
 	expected := colour.New(0.1, 0.1, 0.1)
 	result := ShadeHit(w, comps)
@@ -270,7 +270,7 @@ func TestOverPoint(t *testing.T) {
 	r := ray.New(vector.NewPoint(0, 0, -5), vector.NewVector(0, 0, 1))
 	s := shape.NewSphere()
 	s.SetTransform(matrix.TranslationMatrix(0, 0, 1))
-	i := ray.NewIntersection(5, s)
+	i := shape.NewIntersection(5, s)
 	comps := PrepareComputations(i, r)
 	result := comps.OverPoint.Z
 	if result >= -comparison.EPSLION/2 {
